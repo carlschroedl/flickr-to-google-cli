@@ -1,0 +1,46 @@
+{
+  "name": "flickr-to-google-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool for transferring photo albums from Flickr to Google Photos while preserving metadata",
+  "main": "dist/index.js",
+  "bin": {
+    "flickr-to-google": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean"
+  },
+  "keywords": [
+    "flickr",
+    "google-photos",
+    "photo-transfer",
+    "cli",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "chalk": "^4.1.2",
+    "commander": "^11.1.0",
+    "dotenv": "^16.3.1",
+    "fs-extra": "^11.2.0",
+    "@inquirer/prompts": "^4.0.0",
+    "mime-types": "^2.1.35",
+    "ora": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^20.10.4",
+    "rimraf": "^5.0.10",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
