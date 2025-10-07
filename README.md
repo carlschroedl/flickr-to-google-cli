@@ -207,6 +207,25 @@ npm run build
 npm run dev <command>
 ```
 
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run unit tests only
+npm run test:unit
+
+# Run integration tests only
+npm run test:integration
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
 ### Linting and Formatting
 
 ```bash
@@ -222,7 +241,7 @@ npm run format
 # Check formatting
 npm run format:check
 
-# Run all checks (lint + format + build)
+# Run all checks (lint + format + build + test)
 npm run check
 ```
 
@@ -249,12 +268,34 @@ This project uses ESLint and Prettier for code quality and formatting:
 - **Prettier**: Ensures consistent code formatting
 - **TypeScript**: Provides type safety and better IDE support
 
+### Testing
+
+The project includes comprehensive automated testing:
+
+- **Unit Tests**: Test individual components in isolation
+- **Integration Tests**: Test component interactions and CLI functionality
+- **Coverage Reports**: Track test coverage with detailed reports
+- **Mocking**: Proper mocking of external dependencies
+
+Test Structure:
+```
+tests/
+├── unit/                    # Unit tests
+│   ├── config/             # ConfigManager tests
+│   ├── services/           # API service tests
+│   └── utils/              # Utility tests
+├── integration/            # Integration tests
+│   ├── cli/                # CLI command tests
+│   └── transfer/           # Transfer logic tests
+└── setup.ts               # Test configuration
+```
+
 Before submitting a pull request, make sure to run:
 ```bash
 npm run check
 ```
 
-This will run linting, format checking, and build verification.
+This will run linting, format checking, build verification, and all tests.
 
 ## License
 

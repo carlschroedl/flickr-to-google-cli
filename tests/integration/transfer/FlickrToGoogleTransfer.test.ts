@@ -1,0 +1,346 @@
+import { FlickrToGoogleTransfer } from '../../../src/transfer/FlickrToGoogleTransfer';
+import { FlickrService } from '../../../src/services/FlickrService';
+import { GooglePhotosService } from '../../../src/services/GooglePhotosService';
+import { ConfigManager } from '../../../src/config/ConfigManager';
+import { TransferOptions, FlickrAlbum, FlickrPhoto } from '../../../src/types';
+import fs from 'fs-extra';
+import path from 'path';
+
+// Mock dependencies
+jest.mock('../../../src/services/FlickrService');
+jest.mock('../../../src/services/GooglePhotosService');
+jest.mock('../../../src/config/ConfigManager');
+jest.mock('fs-extra');
+
+const MockedFlickrService = FlickrService as jest.MockedClass<typeof FlickrService>;
+const MockedGooglePhotosService = GooglePhotosService as jest.MockedClass<typeof GooglePhotosService>;
+const MockedConfigManager = ConfigManager as jest.MockedClass<typeof ConfigManager>;
+const mockedFs = fs as jest.Mocked<typeof fs>;
+
+describe('FlickrToGoogleTransfer Integration', () => {
+  let transfer: FlickrToGoogleTransfer;
+  let mockFlickrService: jest.Mocked<FlickrService>;
+  let mockGooglePhotosService: jest.Mocked<GooglePhotosService>;
+  let mockConfigManager: jest.Mocked<ConfigManager>;
+
+  const mockAlbum: FlickrAlbum = {
+    id: 'album1',
+    title: 'Test Album',
+    description: 'Test Description',
+    photoCount: 2,
+    photos: [
+      {
+        id: 'photo1',
+        title: 'Photo 1',
+        description: 'Description 1',
+        url: 'https://example.com/photo1.jpg',
+        dateTaken: '2023-01-01',
+        dateUpload: '1234567890',
+        tags: ['tag1'],
+        latitude: 40.7128,
+        longitude: -74.0060,
+        width: 1920,
+        height: 1080,
+        secret: 'secret1',
+        server: 'server1',
+        farm: 1
+      },
+      {
+        id: 'photo2',
+        title: 'Photo 2',
+        description: 'Description 2',
+        url: 'https://example.com/photo2.jpg',
+        dateTaken: '2023-01-02',
+        dateUpload: '1234567891',
+        tags: ['tag2'],
+        width: 1920,
+        height: 1080,
+        secret: 'secret2',
+        server: 'server2',
+        farm: 1
+      }
+    ],
+    dateCreated: '1234567890',
+    dateUpdated: '1234567890'
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Create mock instances
+    mockFlickrService = {
+      getAlbums: jest.fn(),
+      getAlbumDetails: jest.fn(),
+      downloadPhoto: jest.fn()
+    } as any;
+
+    mockGooglePhotosService = {
+      createAlbum: jest.fn(),
+      uploadPhoto: jest.fn(),
+      addPhotosToAlbum: jest.fn(),
+      updatePhotoMetadata: jest.fn()
+    } as any;
+
+    mockConfigManager = {
+      getCredentials: jest.fn()
+    } as any;
+
+    // Mock constructor returns
+    MockedFlickrService.mockImplementation(() => mockFlickrService);
+    MockedGooglePhotosService.mockImplementation(() => mockGooglePhotosService);
+    MockedConfigManager.mockImplementation(() => mockConfigManager);
+
+    // Mock fs operations
+    (mockedFs.ensureDir as any).mockResolvedValue(undefined);
+    mockedFs.writeJson.mockResolvedValue(undefined);
+
+    transfer = new FlickrToGoogleTransfer();
+  });
+
+  describe('initialize', () => {
+    it('should initialize services with credentials', async () => {
+      const mockCredentials = {
+        flickr: {
+          apiKey: 'test-key',
+          apiSecret: 'test-secret',
+          userId: 'test-user'
+        },
+        google: {
+          clientId: 'test-client-id',
+          clientSecret: 'test-client-secret'
+        }
+      };
+
+      mockConfigManager.getCredentials.mockResolvedValue(mockCredentials);
+
+      await transfer.initialize();
+
+      expect(MockedFlickrService).toHaveBeenCalledWith(mockCredentials.flickr);
+      expect(MockedGooglePhotosService).toHaveBeenCalledWith(mockCredentials.google);
+    });
+  });
+
+  describe('listFlickrAlbums', () => {
+    it('should list albums successfully', async () => {
+      mockConfigManager.getCredentials.mockResolvedValue({
+        flickr: { apiKey: 'test', apiSecret: 'test' },
+        google: { clientId: 'test', clientSecret: 'test' }
+      });
+
+      mockFlickrService.getAlbums.mockResolvedValue([mockAlbum]);
+
+      const consoleSpy = jest.spyOn(console, 'log');
+
+      await transfer.listFlickrAlbums();
+
+      expect(mockFlickrService.getAlbums).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Found 1 album'));
+    });
+
+    it('should handle errors gracefully', async () => {
+      mockConfigManager.getCredentials.mockResolvedValue({
+        flickr: { apiKey: 'test', apiSecret: 'test' },
+        google: { clientId: 'test', clientSecret: 'test' }
+      });
+
+      mockFlickrService.getAlbums.mockRejectedValue(new Error('API Error'));
+
+      await expect(transfer.listFlickrAlbums()).rejects.toThrow('API Error');
+    });
+  });
+
+  describe('transferAlbums', () => {
+    beforeEach(async () => {
+      mockConfigManager.getCredentials.mockResolvedValue({
+        flickr: { apiKey: 'test', apiSecret: 'test' },
+        google: { clientId: 'test', clientSecret: 'test' }
+      });
+
+      await transfer.initialize();
+    });
+
+    it('should transfer specific album', async () => {
+      mockFlickrService.getAlbumDetails.mockResolvedValue(mockAlbum);
+      mockGooglePhotosService.createAlbum.mockResolvedValue({
+        id: 'google-album-id',
+        title: 'Test Album',
+        description: 'Test Description',
+        mediaItemsCount: 0,
+        isWriteable: true
+      });
+      mockFlickrService.downloadPhoto.mockResolvedValue(Buffer.from('mock image data'));
+      mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
+      mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
+      mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
+
+      const options: TransferOptions = {
+        albumId: 'album1',
+        dryRun: false,
+        batchSize: 10
+      };
+
+      await transfer.transferAlbums(options);
+
+      expect(mockFlickrService.getAlbumDetails).toHaveBeenCalledWith('album1');
+      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalledWith('Test Album', 'Test Description');
+      expect(mockFlickrService.downloadPhoto).toHaveBeenCalledTimes(2);
+      expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(2);
+      expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', ['google-photo-id', 'google-photo-id']);
+    });
+
+    it('should handle dry run mode', async () => {
+      mockFlickrService.getAlbumDetails.mockResolvedValue(mockAlbum);
+      mockGooglePhotosService.createAlbum.mockResolvedValue({
+        id: 'google-album-id',
+        title: 'Test Album',
+        description: 'Test Description',
+        mediaItemsCount: 0,
+        isWriteable: true
+      });
+
+      const options: TransferOptions = {
+        albumId: 'album1',
+        dryRun: true,
+        batchSize: 10
+      };
+
+      await transfer.transferAlbums(options);
+
+      expect(mockFlickrService.getAlbumDetails).toHaveBeenCalledWith('album1');
+      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalled();
+      expect(mockFlickrService.downloadPhoto).not.toHaveBeenCalled();
+      expect(mockGooglePhotosService.uploadPhoto).not.toHaveBeenCalled();
+    });
+
+    it('should handle batch processing', async () => {
+      const largeAlbum: FlickrAlbum = {
+        ...mockAlbum,
+        photos: Array.from({ length: 25 }, (_, i) => ({
+          ...mockAlbum.photos[0],
+          id: `photo${i + 1}`,
+          title: `Photo ${i + 1}`
+        }))
+      };
+
+      mockFlickrService.getAlbumDetails.mockResolvedValue(largeAlbum);
+      mockGooglePhotosService.createAlbum.mockResolvedValue({
+        id: 'google-album-id',
+        title: 'Test Album',
+        description: 'Test Description',
+        mediaItemsCount: 0,
+        isWriteable: true
+      });
+      mockFlickrService.downloadPhoto.mockResolvedValue(Buffer.from('mock image data'));
+      mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
+      mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
+      mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
+
+      const options: TransferOptions = {
+        albumId: 'album1',
+        dryRun: false,
+        batchSize: 10
+      };
+
+      await transfer.transferAlbums(options);
+
+      // Should process in batches of 10
+      expect(mockFlickrService.downloadPhoto).toHaveBeenCalledTimes(25);
+      expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(25);
+    });
+
+    it('should handle photo download failures gracefully', async () => {
+      mockFlickrService.getAlbumDetails.mockResolvedValue(mockAlbum);
+      mockGooglePhotosService.createAlbum.mockResolvedValue({
+        id: 'google-album-id',
+        title: 'Test Album',
+        description: 'Test Description',
+        mediaItemsCount: 0,
+        isWriteable: true
+      });
+      
+      // First photo download fails, second succeeds
+      mockFlickrService.downloadPhoto
+        .mockRejectedValueOnce(new Error('Download failed'))
+        .mockResolvedValueOnce(Buffer.from('mock image data'));
+      
+      mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
+      mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
+      mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
+
+      const options: TransferOptions = {
+        albumId: 'album1',
+        dryRun: false,
+        batchSize: 10
+      };
+
+      await transfer.transferAlbums(options);
+
+      // Should still process the successful photo
+      expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(1);
+      expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', ['google-photo-id']);
+    });
+  });
+
+  describe('checkTransferStatus', () => {
+    beforeEach(async () => {
+      mockConfigManager.getCredentials.mockResolvedValue({
+        flickr: { apiKey: 'test', apiSecret: 'test' },
+        google: { clientId: 'test', clientSecret: 'test' }
+      });
+
+      await transfer.initialize();
+    });
+
+    it('should list all jobs when no jobId provided', async () => {
+      const mockJobs = [
+        {
+          id: 'job1',
+          status: 'completed',
+          albumTitle: 'Album 1',
+          processedPhotos: 10,
+          totalPhotos: 10,
+          startTime: new Date(),
+          endTime: new Date()
+        }
+      ];
+
+      (mockedFs.readdir as any).mockResolvedValue(['job1.json']);
+      mockedFs.readJson.mockResolvedValue(mockJobs[0]);
+
+      const consoleSpy = jest.spyOn(console, 'log');
+
+      await transfer.checkTransferStatus();
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Transfer Jobs:'));
+    });
+
+    it('should show specific job when jobId provided', async () => {
+      const mockJob = {
+        id: 'job1',
+        status: 'in_progress',
+        albumTitle: 'Album 1',
+        processedPhotos: 5,
+        totalPhotos: 10,
+        startTime: new Date()
+      };
+
+      mockedFs.readJson.mockResolvedValue(mockJob);
+
+      const consoleSpy = jest.spyOn(console, 'log');
+
+      await transfer.checkTransferStatus('job1');
+
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Job Status: job1'));
+    });
+
+    it('should handle job not found', async () => {
+      mockedFs.readJson.mockRejectedValue(new Error('File not found'));
+
+      const consoleSpy = jest.spyOn(console, 'error');
+
+      await transfer.checkTransferStatus('nonexistent-job');
+
+      expect(consoleSpy).toHaveBeenCalledWith('✗', 'Job nonexistent-job not found');
+    });
+  });
+});
