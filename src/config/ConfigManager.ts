@@ -35,12 +35,12 @@ export class ConfigManager {
 
     const flickrApiKey = await input({
       message: 'Flickr API Key:',
-      validate: (value: string) => value.length > 0 || 'API Key is required'
+      validate: (value: string) => value.length > 0 || 'API Key is required',
     });
 
     const flickrApiSecret = await password({
       message: 'Flickr API Secret:',
-      validate: (value: string) => value.length > 0 || 'API Secret is required'
+      validate: (value: string) => value.length > 0 || 'API Secret is required',
     });
 
     const flickrUserId = await input({
@@ -49,12 +49,12 @@ export class ConfigManager {
 
     const googleClientId = await input({
       message: 'Google OAuth Client ID:',
-      validate: (value: string) => value.length > 0 || 'Client ID is required'
+      validate: (value: string) => value.length > 0 || 'Client ID is required',
     });
 
     const googleClientSecret = await password({
       message: 'Google OAuth Client Secret:',
-      validate: (value: string) => value.length > 0 || 'Client Secret is required'
+      validate: (value: string) => value.length > 0 || 'Client Secret is required',
     });
 
     const config: Config = {
@@ -62,16 +62,16 @@ export class ConfigManager {
         flickr: {
           apiKey: flickrApiKey,
           apiSecret: flickrApiSecret,
-          userId: flickrUserId || undefined
+          userId: flickrUserId || undefined,
         },
         google: {
           clientId: googleClientId,
-          clientSecret: googleClientSecret
-        }
+          clientSecret: googleClientSecret,
+        },
       },
       defaultBatchSize: 10,
       maxRetries: 3,
-      retryDelay: 1000
+      retryDelay: 1000,
     };
 
     await this.saveConfig(config);

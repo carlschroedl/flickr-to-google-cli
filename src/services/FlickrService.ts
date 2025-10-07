@@ -20,12 +20,12 @@ export class FlickrService {
       api_key: this.apiKey,
       format: 'json',
       nojsoncallback: 1,
-      ...params
+      ...params,
     };
 
     try {
       const response: AxiosResponse = await axios.get(this.baseUrl, { params: requestParams });
-      
+
       if (response.data.stat === 'fail') {
         throw new Error(`Flickr API Error: ${response.data.message}`);
       }
@@ -56,16 +56,16 @@ export class FlickrService {
   }
 
   async getAlbums(userId?: string): Promise<FlickrAlbum[]> {
-    const targetUserId = userId || await this.getUserId();
-    
+    const targetUserId = userId || (await this.getUserId());
+
     try {
       const response = await this.makeRequest('flickr.photosets.getList', {
         user_id: targetUserId,
-        per_page: 500
+        per_page: 500,
       });
 
       const albums: FlickrAlbum[] = [];
-      
+
       for (const photoset of response.photosets.photoset) {
         const album = await this.getAlbumDetails(photoset.id);
         albums.push(album);
@@ -81,16 +81,16 @@ export class FlickrService {
   async getAlbumDetails(albumId: string): Promise<FlickrAlbum> {
     try {
       const response = await this.makeRequest('flickr.photosets.getInfo', {
-        photoset_id: albumId
+        photoset_id: albumId,
       });
 
       const photoset = response.photoset;
-      
+
       // Get photos in the album
       const photosResponse = await this.makeRequest('flickr.photosets.getPhotos', {
         photoset_id: albumId,
         per_page: 500,
-        extras: 'description,date_taken,date_upload,tags,geo,url_o,url_l,url_m,url_s,o_dims'
+        extras: 'description,date_taken,date_upload,tags,geo,url_o,url_l,url_m,url_s,o_dims',
       });
 
       const photos: FlickrPhoto[] = photosResponse.photoset.photo.map((photo: any) => ({
@@ -107,7 +107,7 @@ export class FlickrService {
         height: parseInt(photo.height_o || photo.height_l || photo.height_m || photo.height_s),
         secret: photo.secret,
         server: photo.server,
-        farm: photo.farm
+        farm: photo.farm,
       }));
 
       return {
@@ -117,7 +117,7 @@ export class FlickrService {
         photoCount: parseInt(photoset.photos),
         photos,
         dateCreated: photoset.date_create,
-        dateUpdated: photoset.date_update
+        dateUpdated: photoset.date_update,
       };
     } catch (error) {
       Logger.error(`Failed to get album details for ${albumId}:`, error);
@@ -128,11 +128,11 @@ export class FlickrService {
   async getPhotoInfo(photoId: string): Promise<FlickrPhoto> {
     try {
       const response = await this.makeRequest('flickr.photos.getInfo', {
-        photo_id: photoId
+        photo_id: photoId,
       });
 
       const photo = response.photo;
-      
+
       return {
         id: photo.id,
         title: photo.title._content,
@@ -147,7 +147,7 @@ export class FlickrService {
         height: parseInt(photo.heights.o || photo.heights.l || photo.heights.m || photo.heights.s),
         secret: photo.secret,
         server: photo.server,
-        farm: photo.farm
+        farm: photo.farm,
       };
     } catch (error) {
       Logger.error(`Failed to get photo info for ${photoId}:`, error);

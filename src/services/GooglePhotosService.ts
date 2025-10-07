@@ -30,7 +30,7 @@ export class GooglePhotosService {
         client_id: this.clientId,
         client_secret: this.clientSecret,
         refresh_token: this.refreshToken,
-        grant_type: 'refresh_token'
+        grant_type: 'refresh_token',
       });
 
       this.accessToken = response.data.access_token;
@@ -43,15 +43,15 @@ export class GooglePhotosService {
 
   private async makeRequest(method: string, endpoint: string, data?: any): Promise<any> {
     const token = await this.getAccessToken();
-    
+
     try {
       const config: any = {
         method,
         url: `${this.baseUrl}${endpoint}`,
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       };
 
       if (data) {
@@ -71,8 +71,8 @@ export class GooglePhotosService {
       const response = await this.makeRequest('POST', '/albums', {
         album: {
           title,
-          description
-        }
+          description,
+        },
       });
 
       return {
@@ -80,7 +80,7 @@ export class GooglePhotosService {
         title: response.title,
         description: response.description,
         mediaItemsCount: 0,
-        isWriteable: true
+        isWriteable: true,
       };
     } catch (error) {
       Logger.error('Failed to create album:', error);
@@ -102,16 +102,18 @@ export class GooglePhotosService {
     try {
       // First, upload the binary data
       const uploadToken = await this.uploadBinary(photoBuffer, mimeType);
-      
+
       // Then, create the media item
       const response = await this.makeRequest('POST', '/mediaItems:batchCreate', {
-        newMediaItems: [{
-          description: filename,
-          simpleMediaItem: {
-            fileName: filename,
-            uploadToken: uploadToken
-          }
-        }]
+        newMediaItems: [
+          {
+            description: filename,
+            simpleMediaItem: {
+              fileName: filename,
+              uploadToken: uploadToken,
+            },
+          },
+        ],
       });
 
       if (response.newMediaItemResults && response.newMediaItemResults.length > 0) {
@@ -127,18 +129,18 @@ export class GooglePhotosService {
 
   private async uploadBinary(buffer: Buffer, mimeType: string): Promise<string> {
     const token = await this.getAccessToken();
-    
+
     try {
       const response: AxiosResponse = await axios.post(
         'https://photoslibrary.googleapis.com/v1/uploads',
         buffer,
         {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': mimeType,
             'X-Goog-Upload-Protocol': 'raw',
-            'X-Goog-Upload-File-Name': `photo_${Date.now()}.${mime.extension(mimeType)}`
-          }
+            'X-Goog-Upload-File-Name': `photo_${Date.now()}.${mime.extension(mimeType)}`,
+          },
         }
       );
 
@@ -152,7 +154,7 @@ export class GooglePhotosService {
   async addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
     try {
       await this.makeRequest('POST', '/albums/' + albumId + ':batchAddMediaItems', {
-        mediaItemIds: photoIds
+        mediaItemIds: photoIds,
       });
     } catch (error) {
       Logger.error('Failed to add photos to album:', error);
@@ -160,20 +162,24 @@ export class GooglePhotosService {
     }
   }
 
-  async updatePhotoMetadata(photoId: string, description?: string, location?: { latitude: number; longitude: number }): Promise<void> {
+  async updatePhotoMetadata(
+    photoId: string,
+    description?: string,
+    location?: { latitude: number; longitude: number }
+  ): Promise<void> {
     try {
       const updateData: any = {};
-      
+
       if (description) {
         updateData.description = description;
       }
-      
+
       if (location) {
         updateData.location = {
           latlng: {
             latitude: location.latitude,
-            longitude: location.longitude
-          }
+            longitude: location.longitude,
+          },
         };
       }
 
@@ -197,13 +203,15 @@ export class GooglePhotosService {
   async searchPhotos(query?: string): Promise<GooglePhoto[]> {
     try {
       const response = await this.makeRequest('POST', '/mediaItems:search', {
-        filters: query ? {
-          includeArchivedMedia: false,
-          contentFilter: {
-            includedContentCategories: ['PHOTO']
-          }
-        } : undefined,
-        pageSize: 100
+        filters: query
+          ? {
+              includeArchivedMedia: false,
+              contentFilter: {
+                includedContentCategories: ['PHOTO'],
+              },
+            }
+          : undefined,
+        pageSize: 100,
       });
 
       return response.mediaItems || [];

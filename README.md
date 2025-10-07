@@ -207,6 +207,25 @@ npm run build
 npm run dev <command>
 ```
 
+### Linting and Formatting
+
+```bash
+# Run ESLint
+npm run lint
+
+# Auto-fix linting issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check formatting
+npm run format:check
+
+# Run all checks (lint + format + build)
+npm run check
+```
+
 ### Cleaning
 
 ```bash
@@ -218,8 +237,24 @@ npm run clean
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Run `npm run check` to ensure code quality (linting, formatting, and build)
+5. Add tests if applicable
+6. Submit a pull request
+
+### Code Quality
+
+This project uses ESLint and Prettier for code quality and formatting:
+
+- **ESLint**: Catches potential bugs and enforces coding standards
+- **Prettier**: Ensures consistent code formatting
+- **TypeScript**: Provides type safety and better IDE support
+
+Before submitting a pull request, make sure to run:
+```bash
+npm run check
+```
+
+This will run linting, format checking, and build verification.
 
 ## License
 
