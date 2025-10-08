@@ -315,3 +315,10 @@ For issues and questions:
 - Never commit this file to version control
 - The file is included in `.gitignore` for your protection
 - Consider using environment variables for production deployments
+
+## Dependency Management
+
+This project uses GitHub Dependabot for automated dependency updates:
+
+- **Daily Updates**: Dependabot runs daily
+- **Auto-merge**: Minor and patch updates for production dependencies (i.e., version 1.0.0 or greater) are automatically merged after passing tests.
