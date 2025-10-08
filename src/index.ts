@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import chalk from 'chalk';
-import { FlickrToGoogleTransfer } from './transfer/FlickrToGoogleTransfer';
 import { ConfigManager } from './config/ConfigManager';
+import { FlickrToGoogleTransfer } from './transfer/FlickrToGoogleTransfer';
 import { Logger } from './utils/Logger';
 
 const program = new Command();
@@ -20,9 +19,9 @@ program
     try {
       const configManager = new ConfigManager();
       await configManager.setupCredentials();
-      console.log(chalk.green('✓ Configuration completed successfully!'));
+      Logger.success('Configuration completed successfully!');
     } catch (error) {
-      console.error(chalk.red('X Setup failed:'), error);
+      Logger.error('Setup failed:', error);
       process.exit(1);
     }
   });
