@@ -22,7 +22,7 @@ program
       await configManager.setupCredentials();
       console.log(chalk.green('✓ Configuration completed successfully!'));
     } catch (error) {
-      console.error(chalk.red('✗ Setup failed:'), error);
+      console.error(chalk.red('X Setup failed:'), error);
       process.exit(1);
     }
   });

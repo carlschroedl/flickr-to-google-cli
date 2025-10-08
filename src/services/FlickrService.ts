@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { FlickrPhoto, FlickrAlbum, ApiCredentials } from '../types';
+import { ApiCredentials, FlickrAlbum, FlickrPhoto } from '../types';
 import { Logger } from '../utils/Logger';
 
 export class FlickrService {

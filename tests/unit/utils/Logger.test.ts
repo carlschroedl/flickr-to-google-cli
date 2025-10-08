@@ -1,4 +1,4 @@
-import { Logger } from '../../../src/utils/Logger';
+import { LOG_PREFIXES, Logger } from '../../../src/utils/Logger';
 
 describe('Logger', () => {
   beforeEach(() => {
@@ -9,9 +9,9 @@ describe('Logger', () => {
     it('should log info message with blue color', () => {
       const consoleSpy = jest.spyOn(console, 'log');
       Logger.info('Test info message');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('ℹ'),
+        expect.stringContaining(LOG_PREFIXES.INFO),
         'Test info message'
       );
     });
@@ -19,9 +19,9 @@ describe('Logger', () => {
     it('should log info message with additional arguments', () => {
       const consoleSpy = jest.spyOn(console, 'log');
       Logger.info('Test message', 'arg1', 'arg2');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('ℹ'),
+        expect.stringContaining(LOG_PREFIXES.INFO),
         'Test message',
         'arg1',
         'arg2'
@@ -33,9 +33,9 @@ describe('Logger', () => {
     it('should log success message with green color', () => {
       const consoleSpy = jest.spyOn(console, 'log');
       Logger.success('Test success message');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('✓'),
+        expect.stringContaining(LOG_PREFIXES.SUCCESS),
         'Test success message'
       );
     });
@@ -45,9 +45,9 @@ describe('Logger', () => {
     it('should log warning message with yellow color', () => {
       const consoleSpy = jest.spyOn(console, 'log');
       Logger.warning('Test warning message');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('⚠'),
+        expect.stringContaining(LOG_PREFIXES.WARNING),
         'Test warning message'
       );
     });
@@ -57,9 +57,9 @@ describe('Logger', () => {
     it('should log error message with red color', () => {
       const consoleSpy = jest.spyOn(console, 'error');
       Logger.error('Test error message');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('✗'),
+        expect.stringContaining(LOG_PREFIXES.ERROR),
         'Test error message'
       );
     });
@@ -69,27 +69,27 @@ describe('Logger', () => {
     it('should not log debug message when DEBUG is not set', () => {
       const originalDebug = process.env.DEBUG;
       delete process.env.DEBUG;
-      
+
       const consoleSpy = jest.spyOn(console, 'log');
       Logger.debug('Test debug message');
-      
+
       expect(consoleSpy).not.toHaveBeenCalled();
-      
+
       process.env.DEBUG = originalDebug;
     });
 
     it('should log debug message when DEBUG is set', () => {
       const originalDebug = process.env.DEBUG;
       process.env.DEBUG = 'true';
-      
+
       const consoleSpy = jest.spyOn(console, 'log');
       Logger.debug('Test debug message');
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('🐛'),
+        expect.stringContaining(LOG_PREFIXES.DEBUG),
         'Test debug message'
       );
-      
+
       process.env.DEBUG = originalDebug;
     });
   });
@@ -98,9 +98,9 @@ describe('Logger', () => {
     it('should write progress to stdout', () => {
       const stdoutSpy = jest.spyOn(process.stdout, 'write');
       Logger.progress('Processing', 5, 10);
-      
+
       expect(stdoutSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Progress:')
+        expect.stringContaining(LOG_PREFIXES.PROGRESS)
       );
       expect(stdoutSpy).toHaveBeenCalledWith(
         expect.stringContaining('50%')
@@ -113,7 +113,7 @@ describe('Logger', () => {
     it('should write newline when progress is complete', () => {
       const stdoutSpy = jest.spyOn(process.stdout, 'write');
       Logger.progress('Processing', 10, 10);
-      
+
       expect(stdoutSpy).toHaveBeenCalledWith('\n');
     });
   });

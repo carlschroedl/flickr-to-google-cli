@@ -1,12 +1,12 @@
+import fs from 'fs-extra';
+import * as mime from 'mime-types';
+import ora from 'ora';
+import path from 'path';
+import { ConfigManager } from '../config/ConfigManager';
 import { FlickrService } from '../services/FlickrService';
 import { GooglePhotosService } from '../services/GooglePhotosService';
-import { ConfigManager } from '../config/ConfigManager';
+import { FlickrAlbum, FlickrPhoto, TransferJob, TransferOptions } from '../types';
 import { Logger } from '../utils/Logger';
-import { TransferOptions, TransferJob, FlickrAlbum, FlickrPhoto } from '../types';
-import ora from 'ora';
-import * as mime from 'mime-types';
-import fs from 'fs-extra';
-import path from 'path';
 
 export class FlickrToGoogleTransfer {
   private flickrService!: FlickrService;
@@ -37,17 +37,17 @@ export class FlickrToGoogleTransfer {
       const albums = await this.flickrService.getAlbums(username);
       spinner.succeed(`Found ${albums.length} albums`);
 
-      console.log('\nFlickr Albums:');
-      console.log('==============');
+      Logger.info('\nFlickr Albums:');
+      Logger.info('==============');
 
       albums.forEach((album, index) => {
-        console.log(`${index + 1}. ${album.title}`);
-        console.log(`   ID: ${album.id}`);
-        console.log(`   Photos: ${album.photoCount}`);
-        console.log(
+        Logger.info(`${index + 1}. ${album.title}`);
+        Logger.info(`   ID: ${album.id}`);
+        Logger.info(`   Photos: ${album.photoCount}`);
+        Logger.info(
           `   Description: ${album.description.substring(0, 100)}${album.description.length > 100 ? '...' : ''}`
         );
-        console.log('');
+        Logger.info('');
       });
     } catch (error) {
       spinner.fail('Failed to fetch albums');
@@ -210,29 +210,29 @@ export class FlickrToGoogleTransfer {
         return;
       }
 
-      console.log('\nTransfer Jobs:');
-      console.log('==============');
+      Logger.info('\nTransfer Jobs:');
+      Logger.info('==============');
 
       jobs.forEach(job => {
         const statusIcon =
           job.status === 'completed'
             ? '✓'
             : job.status === 'failed'
-              ? '✗'
+              ? 'X'
               : job.status === 'in_progress'
                 ? '⏳'
                 : '⏸';
 
-        console.log(`${statusIcon} ${job.albumTitle} (${job.processedPhotos}/${job.totalPhotos})`);
-        console.log(`   Status: ${job.status}`);
-        console.log(`   Started: ${job.startTime.toLocaleString()}`);
+        Logger.info(`${statusIcon} ${job.albumTitle} (${job.processedPhotos}/${job.totalPhotos})`);
+        Logger.info(`   Status: ${job.status}`);
+        Logger.info(`   Started: ${job.startTime.toLocaleString()}`);
         if (job.endTime) {
-          console.log(`   Ended: ${job.endTime.toLocaleString()}`);
+          Logger.info(`   Ended: ${job.endTime.toLocaleString()}`);
         }
         if (job.error) {
-          console.log(`   Error: ${job.error}`);
+          Logger.info(`   Error: ${job.error}`);
         }
-        console.log('');
+        Logger.info('');
       });
     } else {
       // Check specific job
@@ -242,17 +242,17 @@ export class FlickrToGoogleTransfer {
         return;
       }
 
-      console.log(`\nJob Status: ${job.id}`);
-      console.log('==============');
-      console.log(`Album: ${job.albumTitle}`);
-      console.log(`Status: ${job.status}`);
-      console.log(`Progress: ${job.processedPhotos}/${job.totalPhotos}`);
-      console.log(`Started: ${job.startTime.toLocaleString()}`);
+      Logger.info(`\nJob Status: ${job.id}`);
+      Logger.info('==============');
+      Logger.info(`Album: ${job.albumTitle}`);
+      Logger.info(`Status: ${job.status}`);
+      Logger.info(`Progress: ${job.processedPhotos}/${job.totalPhotos}`);
+      Logger.info(`Started: ${job.startTime.toLocaleString()}`);
       if (job.endTime) {
-        console.log(`Ended: ${job.endTime.toLocaleString()}`);
+        Logger.info(`Ended: ${job.endTime.toLocaleString()}`);
       }
       if (job.error) {
-        console.log(`Error: ${job.error}`);
+        Logger.info(`Error: ${job.error}`);
       }
     }
   }

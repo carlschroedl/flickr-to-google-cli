@@ -1,10 +1,10 @@
-import { FlickrToGoogleTransfer } from '../../../src/transfer/FlickrToGoogleTransfer';
+import fs from 'fs-extra';
+import { ConfigManager } from '../../../src/config/ConfigManager';
 import { FlickrService } from '../../../src/services/FlickrService';
 import { GooglePhotosService } from '../../../src/services/GooglePhotosService';
-import { ConfigManager } from '../../../src/config/ConfigManager';
-import { TransferOptions, FlickrAlbum, FlickrPhoto } from '../../../src/types';
-import fs from 'fs-extra';
-import path from 'path';
+import { FlickrToGoogleTransfer } from '../../../src/transfer/FlickrToGoogleTransfer';
+import { FlickrAlbum, TransferOptions } from '../../../src/types';
+import { LOG_PREFIXES } from '../../../src/utils/Logger';
 
 // Mock dependencies
 jest.mock('../../../src/services/FlickrService');
@@ -134,7 +134,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
       await transfer.listFlickrAlbums();
 
       expect(mockFlickrService.getAlbums).toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Found 1 album'));
+      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.INFO, expect.stringContaining(mockAlbum.title));
     });
 
     it('should handle errors gracefully', async () => {
@@ -257,12 +257,12 @@ describe('FlickrToGoogleTransfer Integration', () => {
         mediaItemsCount: 0,
         isWriteable: true
       });
-      
+
       // First photo download fails, second succeeds
       mockFlickrService.downloadPhoto
         .mockRejectedValueOnce(new Error('Download failed'))
         .mockResolvedValueOnce(Buffer.from('mock image data'));
-      
+
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
       mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
       mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
@@ -311,7 +311,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       await transfer.checkTransferStatus();
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Transfer Jobs:'));
+      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.INFO, expect.stringContaining('Transfer Jobs:'));
     });
 
     it('should show specific job when jobId provided', async () => {
@@ -330,7 +330,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       await transfer.checkTransferStatus('job1');
 
-      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Job Status: job1'));
+      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.INFO, expect.stringContaining('Job Status: job1'));
     });
 
     it('should handle job not found', async () => {
@@ -340,7 +340,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       await transfer.checkTransferStatus('nonexistent-job');
 
-      expect(consoleSpy).toHaveBeenCalledWith('✗', 'Job nonexistent-job not found');
+      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.ERROR, 'Job nonexistent-job not found');
     });
   });
 });
