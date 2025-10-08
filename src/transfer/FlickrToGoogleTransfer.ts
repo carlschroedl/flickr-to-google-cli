@@ -159,38 +159,38 @@ export class FlickrToGoogleTransfer {
           Logger.info(`[DRY RUN] Would transfer: ${photo.title}`);
           photoIds.push(`dry_run_${photo.id}`);
           continue;
-        }
+        } else {
+          // Download photo
+          const photoBuffer = await this.flickrService.downloadPhoto(photo);
 
-        // Download photo
-        const photoBuffer = await this.flickrService.downloadPhoto(photo);
+          // Determine MIME type
+          const mimeType = mime.lookup(photo.url) || 'image/jpeg';
+          const filename = `${photo.id}.${mime.extension(mimeType) || 'jpg'}`;
 
-        // Determine MIME type
-        const mimeType = mime.lookup(photo.url) || 'image/jpeg';
-        const filename = `${photo.id}.${mime.extension(mimeType) || 'jpg'}`;
-
-        // Upload to Google Photos
-        const googlePhotoId = await this.googlePhotosService.uploadPhoto(
-          photoBuffer,
-          filename,
-          mimeType
-        );
-
-        // Update metadata
-        if (photo.description || (photo.latitude && photo.longitude)) {
-          await this.googlePhotosService.updatePhotoMetadata(
-            googlePhotoId,
-            photo.description,
-            photo.latitude && photo.longitude
-              ? {
-                  latitude: photo.latitude,
-                  longitude: photo.longitude,
-                }
-              : undefined
+          // Upload to Google Photos
+          const googlePhotoId = await this.googlePhotosService.uploadPhoto(
+            photoBuffer,
+            filename,
+            mimeType
           );
-        }
 
-        photoIds.push(googlePhotoId);
-        Logger.debug(`Transferred photo: ${photo.title}`);
+          // Update metadata
+          if (photo.description || (photo.latitude && photo.longitude)) {
+            await this.googlePhotosService.updatePhotoMetadata(
+              googlePhotoId,
+              photo.description,
+              photo.latitude && photo.longitude
+                ? {
+                    latitude: photo.latitude,
+                    longitude: photo.longitude,
+                  }
+                : undefined
+            );
+          }
+
+          photoIds.push(googlePhotoId);
+          Logger.debug(`Transferred photo: ${photo.title}`);
+        }
       } catch (error) {
         Logger.warning(`Failed to transfer photo "${photo.title}": ${error}`);
         // Continue with other photos
