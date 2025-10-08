@@ -1,7 +1,7 @@
-import { ConfigManager } from '../../../src/config/ConfigManager';
-import { Config } from '../../../src/types';
 import fs from 'fs-extra';
 import path from 'path';
+import { ConfigManager } from '../../../src/config/ConfigManager';
+import { Config } from '../../../src/types';
 
 // Mock fs-extra
 jest.mock('fs-extra');
@@ -24,7 +24,7 @@ describe('ConfigManager', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     configManager = new ConfigManager();
-    
+
     // Mock path.join to return our mock path
     jest.spyOn(path, 'join').mockReturnValue(mockConfigPath);
   });
@@ -32,9 +32,9 @@ describe('ConfigManager', () => {
   describe('loadConfig', () => {
     it('should return null when config file does not exist', async () => {
       (mockedFs.pathExists as any).mockResolvedValue(false);
-      
+
       const result = await configManager.loadConfig();
-      
+
       expect(result).toBeNull();
       expect(mockedFs.readJson).not.toHaveBeenCalled();
     });
@@ -59,9 +59,9 @@ describe('ConfigManager', () => {
 
       (mockedFs.pathExists as any).mockResolvedValue(true);
       mockedFs.readJson.mockResolvedValue(mockConfig);
-      
+
       const result = await configManager.loadConfig();
-      
+
       expect(result).toEqual(mockConfig);
       expect(mockedFs.readJson).toHaveBeenCalledWith(mockConfigPath);
     });
@@ -69,9 +69,9 @@ describe('ConfigManager', () => {
     it('should return null when file exists but read fails', async () => {
       (mockedFs.pathExists as any).mockResolvedValue(true);
       mockedFs.readJson.mockRejectedValue(new Error('Read error'));
-      
+
       const result = await configManager.loadConfig();
-      
+
       expect(result).toBeNull();
     });
   });
@@ -95,9 +95,9 @@ describe('ConfigManager', () => {
       };
 
       mockedFs.writeJson.mockResolvedValue(undefined);
-      
+
       await configManager.saveConfig(mockConfig);
-      
+
       expect(mockedFs.writeJson).toHaveBeenCalledWith(mockConfigPath, mockConfig, { spaces: 2 });
     });
 
@@ -113,7 +113,7 @@ describe('ConfigManager', () => {
       };
 
       mockedFs.writeJson.mockRejectedValue(new Error('Write error'));
-      
+
       await expect(configManager.saveConfig(mockConfig)).rejects.toThrow('Failed to save config: Error: Write error');
     });
   });
@@ -125,13 +125,13 @@ describe('ConfigManager', () => {
       mockedInput.mockResolvedValueOnce('test-user-id');
       mockedInput.mockResolvedValueOnce('test-client-id');
       mockedPassword.mockResolvedValueOnce('test-client-secret');
-      
+
       mockedFs.writeJson.mockResolvedValue(undefined);
-      
+
       const consoleSpy = jest.spyOn(console, 'log');
-      
+
       await configManager.setupCredentials();
-      
+
       expect(mockedInput).toHaveBeenCalledTimes(3);
       expect(mockedPassword).toHaveBeenCalledTimes(2);
       expect(mockedFs.writeJson).toHaveBeenCalledWith(
@@ -151,7 +151,7 @@ describe('ConfigManager', () => {
         }),
         { spaces: 2 }
       );
-      expect(consoleSpy).toHaveBeenCalledWith('\n✓ Configuration saved successfully!');
+      expect(consoleSpy).toHaveBeenCalledWith(expect.any(String), 'Configuration saved successfully!');
     });
   });
 
@@ -176,15 +176,15 @@ describe('ConfigManager', () => {
 
       (mockedFs.pathExists as any).mockResolvedValue(true);
       mockedFs.readJson.mockResolvedValue(mockConfig);
-      
+
       const result = await configManager.getCredentials();
-      
+
       expect(result).toEqual(mockConfig.credentials);
     });
 
     it('should throw error when config does not exist', async () => {
       (mockedFs.pathExists as any).mockResolvedValue(false);
-      
+
       await expect(configManager.getCredentials()).rejects.toThrow(
         'Configuration not found. Please run "flickr-to-google setup" first.'
       );

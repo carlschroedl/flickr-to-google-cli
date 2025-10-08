@@ -1,7 +1,8 @@
+import { input, password } from '@inquirer/prompts';
 import fs from 'fs-extra';
 import path from 'path';
-import { input, password } from '@inquirer/prompts';
-import { Config, ApiCredentials } from '../types';
+import { ApiCredentials, Config } from '../types';
+import { Logger } from '../utils/Logger';
 
 export class ConfigManager {
   private configPath: string;
@@ -31,7 +32,7 @@ export class ConfigManager {
   }
 
   async setupCredentials(): Promise<void> {
-    console.log('Setting up API credentials...\n');
+    Logger.info('Setting up API credentials...\n');
 
     const flickrApiKey = await input({
       message: 'Flickr API Key:',
@@ -75,10 +76,10 @@ export class ConfigManager {
     };
 
     await this.saveConfig(config);
-    console.log('\n✓ Configuration saved successfully!');
-    console.log('\nNext steps:');
-    console.log('1. Run "flickr-to-google list-albums" to see your Flickr albums');
-    console.log('2. Run "flickr-to-google transfer" to start transferring albums');
+    Logger.success('Configuration saved successfully!');
+    Logger.info('\nNext steps:');
+    Logger.info('1. Run "flickr-to-google list-albums" to see your Flickr albums');
+    Logger.info('2. Run "flickr-to-google transfer" to start transferring albums');
   }
 
   async getCredentials(): Promise<ApiCredentials> {
