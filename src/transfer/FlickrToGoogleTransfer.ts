@@ -214,14 +214,7 @@ export class FlickrToGoogleTransfer {
       Logger.info('==============');
 
       jobs.forEach(job => {
-        const statusIcon =
-          job.status === 'completed'
-            ? '✓'
-            : job.status === 'failed'
-              ? 'X'
-              : job.status === 'in_progress'
-                ? '⏳'
-                : '⏸';
+        const statusIcon = this.getStatusIcon(job.status);
 
         Logger.info(`${statusIcon} ${job.albumTitle} (${job.processedPhotos}/${job.totalPhotos})`);
         Logger.info(`   Status: ${job.status}`);
@@ -288,5 +281,16 @@ export class FlickrToGoogleTransfer {
     } catch {
       return [];
     }
+  }
+
+  private getStatusIcon(status: string): string {
+    const statusIconMap: Record<string, string> = {
+      completed: '✓',
+      failed: 'X',
+      in_progress: '⏳',
+      pending: '⏸',
+    };
+
+    return statusIconMap[status] || '❓';
   }
 }
