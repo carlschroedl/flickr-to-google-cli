@@ -13,7 +13,9 @@ jest.mock('../../../src/config/ConfigManager');
 jest.mock('fs-extra');
 
 const MockedFlickrService = FlickrService as jest.MockedClass<typeof FlickrService>;
-const MockedGooglePhotosService = GooglePhotosService as jest.MockedClass<typeof GooglePhotosService>;
+const MockedGooglePhotosService = GooglePhotosService as jest.MockedClass<
+  typeof GooglePhotosService
+>;
 const MockedConfigManager = ConfigManager as jest.MockedClass<typeof ConfigManager>;
 const mockedFs = fs as jest.Mocked<typeof fs>;
 
@@ -38,12 +40,12 @@ describe('FlickrToGoogleTransfer Integration', () => {
         dateUpload: '1234567890',
         tags: ['tag1'],
         latitude: 40.7128,
-        longitude: -74.0060,
+        longitude: -74.006,
         width: 1920,
         height: 1080,
         secret: 'secret1',
         server: 'server1',
-        farm: 1
+        farm: 1,
       },
       {
         id: 'photo2',
@@ -57,11 +59,11 @@ describe('FlickrToGoogleTransfer Integration', () => {
         height: 1080,
         secret: 'secret2',
         server: 'server2',
-        farm: 1
-      }
+        farm: 1,
+      },
     ],
     dateCreated: '1234567890',
-    dateUpdated: '1234567890'
+    dateUpdated: '1234567890',
   };
 
   beforeEach(() => {
@@ -71,18 +73,18 @@ describe('FlickrToGoogleTransfer Integration', () => {
     mockFlickrService = {
       getAlbums: jest.fn(),
       getAlbumDetails: jest.fn(),
-      downloadPhoto: jest.fn()
+      downloadPhoto: jest.fn(),
     } as any;
 
     mockGooglePhotosService = {
       createAlbum: jest.fn(),
       uploadPhoto: jest.fn(),
       addPhotosToAlbum: jest.fn(),
-      updatePhotoMetadata: jest.fn()
+      updatePhotoMetadata: jest.fn(),
     } as any;
 
     mockConfigManager = {
-      getCredentials: jest.fn()
+      getCredentials: jest.fn(),
     } as any;
 
     // Mock constructor returns
@@ -103,12 +105,12 @@ describe('FlickrToGoogleTransfer Integration', () => {
         flickr: {
           apiKey: 'test-key',
           apiSecret: 'test-secret',
-          userId: 'test-user'
+          userId: 'test-user',
         },
         google: {
           clientId: 'test-client-id',
-          clientSecret: 'test-client-secret'
-        }
+          clientSecret: 'test-client-secret',
+        },
       };
 
       mockConfigManager.getCredentials.mockResolvedValue(mockCredentials);
@@ -124,7 +126,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
     it('should list albums successfully', async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
         flickr: { apiKey: 'test', apiSecret: 'test' },
-        google: { clientId: 'test', clientSecret: 'test' }
+        google: { clientId: 'test', clientSecret: 'test' },
       });
 
       mockFlickrService.getAlbums.mockResolvedValue([mockAlbum]);
@@ -134,13 +136,16 @@ describe('FlickrToGoogleTransfer Integration', () => {
       await transfer.listFlickrAlbums();
 
       expect(mockFlickrService.getAlbums).toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.INFO, expect.stringContaining(mockAlbum.title));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        LOG_PREFIXES.INFO,
+        expect.stringContaining(mockAlbum.title)
+      );
     });
 
     it('should handle errors gracefully', async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
         flickr: { apiKey: 'test', apiSecret: 'test' },
-        google: { clientId: 'test', clientSecret: 'test' }
+        google: { clientId: 'test', clientSecret: 'test' },
       });
 
       mockFlickrService.getAlbums.mockRejectedValue(new Error('API Error'));
@@ -153,7 +158,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
     beforeEach(async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
         flickr: { apiKey: 'test', apiSecret: 'test' },
-        google: { clientId: 'test', clientSecret: 'test' }
+        google: { clientId: 'test', clientSecret: 'test' },
       });
 
       await transfer.initialize();
@@ -166,7 +171,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         title: 'Test Album',
         description: 'Test Description',
         mediaItemsCount: 0,
-        isWriteable: true
+        isWriteable: true,
       });
       mockFlickrService.downloadPhoto.mockResolvedValue(Buffer.from('mock image data'));
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
@@ -176,16 +181,22 @@ describe('FlickrToGoogleTransfer Integration', () => {
       const options: TransferOptions = {
         albumId: 'album1',
         dryRun: false,
-        batchSize: 10
+        batchSize: 10,
       };
 
       await transfer.transferAlbums(options);
 
       expect(mockFlickrService.getAlbumDetails).toHaveBeenCalledWith('album1');
-      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalledWith('Test Album', 'Test Description');
+      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalledWith(
+        'Test Album',
+        'Test Description'
+      );
       expect(mockFlickrService.downloadPhoto).toHaveBeenCalledTimes(2);
       expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(2);
-      expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', ['google-photo-id', 'google-photo-id']);
+      expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', [
+        'google-photo-id',
+        'google-photo-id',
+      ]);
     });
 
     it('should handle dry run mode', async () => {
@@ -195,19 +206,19 @@ describe('FlickrToGoogleTransfer Integration', () => {
         title: 'Test Album',
         description: 'Test Description',
         mediaItemsCount: 0,
-        isWriteable: true
+        isWriteable: true,
       });
 
       const options: TransferOptions = {
         albumId: 'album1',
         dryRun: true,
-        batchSize: 10
+        batchSize: 10,
       };
 
       await transfer.transferAlbums(options);
 
       expect(mockFlickrService.getAlbumDetails).toHaveBeenCalledWith('album1');
-      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalled();
+      expect(mockGooglePhotosService.createAlbum).not.toHaveBeenCalled();
       expect(mockFlickrService.downloadPhoto).not.toHaveBeenCalled();
       expect(mockGooglePhotosService.uploadPhoto).not.toHaveBeenCalled();
     });
@@ -218,8 +229,8 @@ describe('FlickrToGoogleTransfer Integration', () => {
         photos: Array.from({ length: 25 }, (_, i) => ({
           ...mockAlbum.photos[0],
           id: `photo${i + 1}`,
-          title: `Photo ${i + 1}`
-        }))
+          title: `Photo ${i + 1}`,
+        })),
       };
 
       mockFlickrService.getAlbumDetails.mockResolvedValue(largeAlbum);
@@ -228,7 +239,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         title: 'Test Album',
         description: 'Test Description',
         mediaItemsCount: 0,
-        isWriteable: true
+        isWriteable: true,
       });
       mockFlickrService.downloadPhoto.mockResolvedValue(Buffer.from('mock image data'));
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
@@ -238,7 +249,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
       const options: TransferOptions = {
         albumId: 'album1',
         dryRun: false,
-        batchSize: 10
+        batchSize: 10,
       };
 
       await transfer.transferAlbums(options);
@@ -255,7 +266,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         title: 'Test Album',
         description: 'Test Description',
         mediaItemsCount: 0,
-        isWriteable: true
+        isWriteable: true,
       });
 
       // First photo download fails, second succeeds
@@ -270,14 +281,16 @@ describe('FlickrToGoogleTransfer Integration', () => {
       const options: TransferOptions = {
         albumId: 'album1',
         dryRun: false,
-        batchSize: 10
+        batchSize: 10,
       };
 
       await transfer.transferAlbums(options);
 
       // Should still process the successful photo
       expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(1);
-      expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', ['google-photo-id']);
+      expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', [
+        'google-photo-id',
+      ]);
     });
   });
 
@@ -285,7 +298,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
     beforeEach(async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
         flickr: { apiKey: 'test', apiSecret: 'test' },
-        google: { clientId: 'test', clientSecret: 'test' }
+        google: { clientId: 'test', clientSecret: 'test' },
       });
 
       await transfer.initialize();
@@ -300,8 +313,8 @@ describe('FlickrToGoogleTransfer Integration', () => {
           processedPhotos: 10,
           totalPhotos: 10,
           startTime: new Date(),
-          endTime: new Date()
-        }
+          endTime: new Date(),
+        },
       ];
 
       (mockedFs.readdir as any).mockResolvedValue(['job1.json']);
@@ -311,7 +324,10 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       await transfer.checkTransferStatus();
 
-      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.INFO, expect.stringContaining('Transfer Jobs:'));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        LOG_PREFIXES.INFO,
+        expect.stringContaining('Transfer Jobs:')
+      );
     });
 
     it('should show specific job when jobId provided', async () => {
@@ -321,7 +337,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         albumTitle: 'Album 1',
         processedPhotos: 5,
         totalPhotos: 10,
-        startTime: new Date()
+        startTime: new Date(),
       };
 
       mockedFs.readJson.mockResolvedValue(mockJob);
@@ -330,7 +346,10 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       await transfer.checkTransferStatus('job1');
 
-      expect(consoleSpy).toHaveBeenCalledWith(LOG_PREFIXES.INFO, expect.stringContaining('Job Status: job1'));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        LOG_PREFIXES.INFO,
+        expect.stringContaining('Job Status: job1')
+      );
     });
 
     it('should handle job not found', async () => {

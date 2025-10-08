@@ -5,7 +5,7 @@ import path from 'path';
 import { ConfigManager } from '../config/ConfigManager';
 import { FlickrService } from '../services/FlickrService';
 import { GooglePhotosService } from '../services/GooglePhotosService';
-import { FlickrAlbum, FlickrPhoto, TransferJob, TransferOptions } from '../types';
+import { FlickrAlbum, FlickrPhoto, GoogleAlbum, TransferJob, TransferOptions } from '../types';
 import { Logger } from '../utils/Logger';
 
 export class FlickrToGoogleTransfer {
@@ -103,12 +103,14 @@ export class FlickrToGoogleTransfer {
 
     try {
       // Create Google Photos album
-      const googleAlbum = await this.googlePhotosService.createAlbum(
-        album.title,
-        album.description
-      );
+      let googleAlbum: GoogleAlbum | null = null;
+      if (!options.dryRun) {
+        googleAlbum = await this.googlePhotosService.createAlbum(album.title, album.description);
 
-      Logger.success(`Created Google Photos album: ${googleAlbum.title}`);
+        Logger.success(`Created Google Photos album: ${googleAlbum.title}`);
+      } else {
+        Logger.info(`[DRY RUN] Would create Google Photos album: ${album.title}`);
+      }
 
       // Process photos in batches
       const batchSize = options.batchSize || 10;
@@ -128,7 +130,13 @@ export class FlickrToGoogleTransfer {
       }
 
       // Add photos to album
-      if (!options.dryRun && photoIds.length > 0) {
+      if (options.dryRun) {
+        Logger.info(`[DRY RUN] Would add ${photoIds.length} photos to album`);
+      } else if (googleAlbum === null) {
+        Logger.error('Google Photos album not found');
+      } else if (photoIds.length === 0) {
+        Logger.warning('No photos to add to album');
+      } else {
         await this.googlePhotosService.addPhotosToAlbum(googleAlbum.id, photoIds);
         Logger.success(`Added ${photoIds.length} photos to album`);
       }
