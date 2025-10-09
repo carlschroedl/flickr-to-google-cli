@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Flickr Albums Schema",
+  "description": "JSON schema for Flickr albums metadata file",
+  "type": "object",
+  "required": [
+    "albums"
+  ],
+  "properties": {
+    "albums": {
+      "type": "array",
+      "description": "Array of album objects",
+      "items": {
+        "type": "object",
+        "required": [
+          "photo_count",
+          "id",
+          "url",
+          "title",
+          "description",
+          "view_count",
+          "created",
+          "last_updated",
+          "cover_photo",
+          "photos"
+        ],
+        "properties": {
+          "photo_count": {
+            "type": "string",
+            "description": "Number of photos in the album as string"
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique album identifier"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the album page on Flickr"
+          },
+          "title": {
+            "type": "string",
+            "description": "Album title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Album description"
+          },
+          "view_count": {
+            "type": "string",
+            "description": "Number of views as string"
+          },
+          "created": {
+            "type": "string",
+            "description": "Unix timestamp when album was created"
+          },
+          "last_updated": {
+            "type": "string",
+            "description": "Unix timestamp when album was last updated"
+          },
+          "cover_photo": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the cover photo"
+          },
+          "photos": {
+            "type": "array",
+            "description": "Array of photo IDs in the album",
+            "items": {
+              "type": "string",
+              "description": "Photo ID"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

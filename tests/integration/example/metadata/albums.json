@@ -1,0 +1,28 @@
+{
+  "albums": [
+    {
+      "photo_count": "2",
+      "id": "100",
+      "url": "https://www.flickr.com/photos/test-user/albums/100",
+      "title": "Test Album",
+      "description": "Test Description",
+      "view_count": "99",
+      "created": "1477185268",
+      "last_updated": "1486952739",
+      "cover_photo": "https://www.flickr.com/photos/test-user/1",
+      "photos": ["1", "2"]
+    },
+    {
+      "photo_count": "1",
+      "id": "101",
+      "url": "https://www.flickr.com/photos/test-user/albums/101",
+      "title": "Test Album 2",
+      "description": "Test Description 2",
+      "view_count": "99",
+      "created": "1477185268",
+      "last_updated": "1486952739",
+      "cover_photo": "https://www.flickr.com/photos/test-user/2",
+      "photos": ["2"]
+    }
+  ]
+}

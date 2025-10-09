@@ -1,0 +1,301 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Flickr Photo Metadata Schema",
+  "description": "JSON schema for Flickr photo metadata files",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "description",
+    "count_views",
+    "count_faves",
+    "count_comments",
+    "date_taken",
+    "count_tags",
+    "count_notes",
+    "rotation",
+    "date_imported",
+    "photopage",
+    "original",
+    "license",
+    "geo",
+    "groups",
+    "albums",
+    "tags",
+    "people",
+    "notes",
+    "privacy",
+    "comment_permissions",
+    "tagging_permissions",
+    "safety",
+    "comments"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique photo identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Photo title/name"
+    },
+    "description": {
+      "type": "string",
+      "description": "Photo description"
+    },
+    "count_views": {
+      "type": "string",
+      "description": "Number of views as string"
+    },
+    "count_faves": {
+      "type": "string",
+      "description": "Number of favorites as string"
+    },
+    "count_comments": {
+      "type": "string",
+      "description": "Number of comments as string"
+    },
+    "date_taken": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when photo was taken"
+    },
+    "count_tags": {
+      "type": "string",
+      "description": "Number of tags as string"
+    },
+    "count_notes": {
+      "type": "string",
+      "description": "Number of notes as string"
+    },
+    "rotation": {
+      "type": "integer",
+      "description": "Photo rotation in degrees"
+    },
+    "date_imported": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time when photo was imported to Flickr"
+    },
+    "photopage": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the photo page on Flickr"
+    },
+    "original": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to the original photo file"
+    },
+    "license": {
+      "type": "string",
+      "description": "Photo license information"
+    },
+    "geo": {
+      "type": "array",
+      "description": "Geographic location data",
+      "items": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "string",
+            "description": "Latitude coordinate"
+          },
+          "longitude": {
+            "type": "string",
+            "description": "Longitude coordinate"
+          },
+          "accuracy": {
+            "type": "string",
+            "description": "Location accuracy level"
+          }
+        },
+        "required": ["latitude", "longitude", "accuracy"]
+      }
+    },
+    "groups": {
+      "type": "array",
+      "description": "Groups the photo belongs to",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Group ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Group title"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Group URL"
+          }
+        },
+        "required": ["id", "title", "url"]
+      }
+    },
+    "albums": {
+      "type": "array",
+      "description": "Albums/sets the photo belongs to",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Album/set ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Album/set title"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Album/set URL"
+          }
+        },
+        "required": ["id", "title", "url"]
+      }
+    },
+    "tags": {
+      "type": "array",
+      "description": "Tags associated with the photo",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tag": {
+            "type": "string",
+            "description": "Tag text"
+          },
+          "user": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL of user who added the tag"
+          },
+          "date_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when tag was created"
+          }
+        },
+        "required": ["tag", "user", "date_create"]
+      }
+    },
+    "people": {
+      "type": "array",
+      "description": "People tagged in the photo",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Person ID"
+          },
+          "username": {
+            "type": "string",
+            "description": "Person's username"
+          },
+          "realname": {
+            "type": "string",
+            "description": "Person's real name"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Person's profile URL"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "description": "Notes on the photo",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Note ID"
+          },
+          "author": {
+            "type": "string",
+            "description": "Note author"
+          },
+          "text": {
+            "type": "string",
+            "description": "Note text"
+          },
+          "x": {
+            "type": "integer",
+            "description": "X coordinate of note"
+          },
+          "y": {
+            "type": "integer",
+            "description": "Y coordinate of note"
+          },
+          "w": {
+            "type": "integer",
+            "description": "Note width"
+          },
+          "h": {
+            "type": "integer",
+            "description": "Note height"
+          }
+        }
+      }
+    },
+    "privacy": {
+      "type": "string",
+      "enum": ["public", "private", "friends", "family", "friends and family"],
+      "description": "Photo privacy setting"
+    },
+    "comment_permissions": {
+      "type": "string",
+      "description": "Who can comment on the photo"
+    },
+    "tagging_permissions": {
+      "type": "string",
+      "description": "Who can tag people in the photo"
+    },
+    "safety": {
+      "type": "string",
+      "enum": ["safe", "moderate", "restricted"],
+      "description": "Photo safety level"
+    },
+    "comments": {
+      "type": "array",
+      "description": "Comments on the photo",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Comment ID"
+          },
+          "author": {
+            "type": "string",
+            "description": "Comment author"
+          },
+          "author_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Comment author's profile URL"
+          },
+          "text": {
+            "type": "string",
+            "description": "Comment text"
+          },
+          "date_create": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date when comment was created"
+          }
+        },
+        "required": ["id", "author", "text", "date_create"]
+      }
+    }
+  },
+  "additionalProperties": false
+}
