@@ -1,5 +1,7 @@
 # Secrets
 /.flickr-to-google.json
+/cert.pem
+/key.pem
 # Dependencies
 node_modules/
 npm-debug.log*
