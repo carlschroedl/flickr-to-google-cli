@@ -1,9 +1,9 @@
 import { createFlickr } from 'flickr-sdk';
-import { ok } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { IncomingMessage, ServerResponse } from 'node:http';
 import { createServer, ServerOptions } from 'node:https';
 import { resolve } from 'node:path';
+import { ConfigManager } from '../config/ConfigManager';
 
 /**
  * This example demonstrates the full OAuth flow described here:
@@ -14,11 +14,9 @@ import { resolve } from 'node:path';
 // users will authorize your app to make calls to the api on their behalf.
 // https://www.flickr.com/services/apps/create/apply/?
 
-ok(process.env.FLICKR_CONSUMER_KEY, 'missing FLICKR_CONSUMER_KEY environment variable');
-ok(process.env.FLICKR_CONSUMER_SECRET, 'missing FLICKR_CONSUMER_SECRET environment variable');
-
-const consumerKey: string = process.env.FLICKR_CONSUMER_KEY!;
-const consumerSecret: string = process.env.FLICKR_CONSUMER_SECRET!;
+const configManager = new ConfigManager();
+let consumerKey: string;
+let consumerSecret: string;
 
 // Interface for user data stored in database
 interface UserData {
@@ -189,6 +187,20 @@ const server = createServer(options, function (req: IncomingMessage, res: Server
   }
 });
 
-server.listen(3000, function () {
-  console.log('Open your browser to https://localhost:3000');
-});
+async function initialize() {
+  try {
+    const credentials = await configManager.getCredentials();
+    consumerKey = credentials.flickr.apiKey;
+    consumerSecret = credentials.flickr.apiSecret;
+
+    // Start server after credentials are loaded
+    server.listen(3000, function () {
+      console.log('Open your browser to https://localhost:3000');
+    });
+  } catch (error) {
+    console.error('Failed to load credentials:', error);
+    process.exit(1);
+  }
+}
+
+initialize();
