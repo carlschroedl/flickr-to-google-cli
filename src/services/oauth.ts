@@ -128,8 +128,8 @@ async function verifyRequestToken(
 
     // log our oauth token and secret for debugging
     // NB don't do this in production!
-    console.log('oauth token:', oauthToken);
-    console.log('oauth token secret:', oauthTokenSecret);
+    // console.log('oauth token:', oauthToken);
+    // console.log('oauth token secret:', oauthTokenSecret);
 
     // create a new Flickr API client using the oauth credentials
     const { flickr } = createFlickr({
