@@ -21,7 +21,10 @@ export class FlickrToGoogleTransfer {
 
   async initialize(): Promise<void> {
     const credentials = await this.configManager.getCredentials();
-    this.flickrService = new FlickrService(credentials.flickr);
+    // For bulk export, we need to specify the data directory
+    // This should be configurable or passed as a parameter
+    const dataDirectory = process.env.FLICKR_DATA_DIRECTORY || './flickr-export';
+    this.flickrService = new FlickrService(dataDirectory);
     this.googlePhotosService = new GooglePhotosService(credentials.google);
 
     // Ensure job storage directory exists
@@ -169,7 +172,7 @@ export class FlickrToGoogleTransfer {
           continue;
         } else {
           // Download photo
-          const photoBuffer = await this.flickrService.downloadPhoto(photo);
+          const photoBuffer = await this.flickrService.getPhoto(photo);
 
           // Determine MIME type
           const mimeType = mime.lookup(photo.url) || 'image/jpeg';
