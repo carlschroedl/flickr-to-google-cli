@@ -13,7 +13,7 @@ export class FlickrService {
   /**
    * Get user's albums (photosets) from bulk export
    */
-  async getAlbums(userId?: string): Promise<FlickrAlbum[]> {
+  async getAlbums(): Promise<FlickrAlbum[]> {
     try {
       const albumsPath = join(this.dataDirectory, 'metadata', 'albums.json');
 

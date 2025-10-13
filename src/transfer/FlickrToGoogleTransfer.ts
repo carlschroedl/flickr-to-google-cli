@@ -31,13 +31,13 @@ export class FlickrToGoogleTransfer {
     await fs.ensureDir(this.jobStoragePath);
   }
 
-  async listFlickrAlbums(username?: string): Promise<void> {
+  async listFlickrAlbums(): Promise<void> {
     await this.initialize();
 
     const spinner = ora('Fetching Flickr albums...').start();
 
     try {
-      const albums = await this.flickrService.getAlbums(username);
+      const albums = await this.flickrService.getAlbums();
       spinner.succeed(`Found ${albums.length} albums`);
 
       Logger.info('\nFlickr Albums:');
@@ -72,7 +72,7 @@ export class FlickrToGoogleTransfer {
         albums = [album];
       } else {
         // Transfer all albums
-        albums = await this.flickrService.getAlbums(options.username);
+        albums = await this.flickrService.getAlbums();
       }
 
       spinner.succeed(`Found ${albums.length} album(s) to transfer`);
