@@ -1,13 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { FlickrAlbum, FlickrPhoto } from '../types';
 import { Logger } from '../utils/Logger';
 
 export class FlickrService {
   private dataDirectory: string;
 
-  constructor(dataDirectory?: string) {
-    this.dataDirectory = dataDirectory || process.cwd();
+  constructor(dataDirectory: string) {
+    this.dataDirectory = dataDirectory;
   }
 
   /**
@@ -169,19 +169,5 @@ export class FlickrService {
       Logger.warning('Could not read data directory:', error);
       return [];
     }
-  }
-
-  /**
-   * Set the data directory for bulk export
-   */
-  setDataDirectory(directory: string): void {
-    this.dataDirectory = resolve(directory);
-  }
-
-  /**
-   * Get the current data directory
-   */
-  getDataDirectory(): string {
-    return this.dataDirectory;
   }
 }

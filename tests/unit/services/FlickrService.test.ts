@@ -1,138 +1,58 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { FlickrService } from '../../../src/services/FlickrService';
-import { ApiCredentials } from '../../../src/types';
-import axios from 'axios';
 
-// Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// Mock file system operations
+jest.mock('node:fs');
+jest.mock('node:path');
+const mockedExistsSync = existsSync as jest.MockedFunction<typeof existsSync>;
+const mockedReadFileSync = readFileSync as jest.MockedFunction<typeof readFileSync>;
+const mockedJoin = join as jest.MockedFunction<typeof join>;
 
 describe('FlickrService', () => {
   let flickrService: FlickrService;
-  const mockCredentials: ApiCredentials['flickr'] = {
-    apiKey: 'test-api-key',
-    apiSecret: 'test-api-secret',
-    userId: 'test-user-id'
-  };
+  const mockDataDirectory = '/test/data/directory';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    flickrService = new FlickrService(mockCredentials);
+    flickrService = new FlickrService(mockDataDirectory);
   });
 
   describe('constructor', () => {
-    it('should initialize with credentials', () => {
+    it('should initialize with data directory', () => {
       expect(flickrService).toBeInstanceOf(FlickrService);
     });
   });
 
-  describe('getUserId', () => {
-    it('should return stored userId when available', async () => {
-      const result = await flickrService.getUserId();
-      expect(result).toBe('test-user-id');
-    });
-
-    it('should fetch userId from API when username provided', async () => {
-      const serviceWithoutUserId = new FlickrService({
-        apiKey: 'test-key',
-        apiSecret: 'test-secret'
-      });
-
-      const mockResponse = {
-        data: {
-          stat: 'ok',
-          user: {
-            nsid: 'fetched-user-id'
-          }
-        }
-      };
-
-      mockedAxios.get.mockResolvedValue(mockResponse);
-
-      const result = await serviceWithoutUserId.getUserId('test-username');
-
-      expect(result).toBe('fetched-user-id');
-      expect(mockedAxios.get).toHaveBeenCalledWith(
-        'https://api.flickr.com/services/rest/',
-        {
-          params: expect.objectContaining({
-            method: 'flickr.people.findByUsername',
-            username: 'test-username'
-          })
-        }
-      );
-    });
-
-    it('should throw error when username required but not provided', async () => {
-      const serviceWithoutUserId = new FlickrService({
-        apiKey: 'test-key',
-        apiSecret: 'test-secret'
-      });
-
-      await expect(serviceWithoutUserId.getUserId()).rejects.toThrow(
-        'Username is required to get user ID'
-      );
-    });
-
-    it('should throw error when API call fails', async () => {
-      const serviceWithoutUserId = new FlickrService({
-        apiKey: 'test-key',
-        apiSecret: 'test-secret'
-      });
-
-      const mockResponse = {
-        data: {
-          stat: 'fail',
-          message: 'API Error'
-        }
-      };
-
-      mockedAxios.get.mockResolvedValue(mockResponse);
-
-      await expect(serviceWithoutUserId.getUserId('test-username')).rejects.toThrow(
-        'Flickr API Error: API Error'
-      );
-    });
-  });
-
   describe('getAlbums', () => {
-    it('should fetch and return albums', async () => {
-      const mockAlbumsResponse = {
-        data: {
-          stat: 'ok',
-          photosets: {
-            photoset: [
-              { id: 'album1', title: { _content: 'Album 1' } }
-            ]
-          }
-        }
+    it('should read albums from local metadata file', async () => {
+      const mockAlbumsData = {
+        albums: [
+          {
+            id: 'album1',
+            title: 'Album 1',
+            description: 'Description 1',
+            photo_count: '2',
+            created: '1234567890',
+            last_updated: '1234567890',
+            photos: ['photo1', 'photo2'],
+          },
+        ],
       };
 
-      mockedAxios.get.mockResolvedValue(mockAlbumsResponse);
+      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync.mockReturnValue(JSON.stringify(mockAlbumsData));
 
-      // Mock the getAlbumDetails method to return the expected album
+      // Mock getAlbumDetails to return a simplified album
       jest.spyOn(flickrService, 'getAlbumDetails').mockResolvedValue({
         id: 'album1',
         title: 'Album 1',
         description: 'Description 1',
-        photoCount: 1,
-        photos: [{
-          id: 'photo1',
-          title: 'Photo 1',
-          description: 'Description',
-          url: 'https://example.com/photo1.jpg',
-          dateTaken: '2023-01-01',
-          dateUpload: '1234567890',
-          tags: ['tag1'],
-          latitude: 40.7128,
-          longitude: -74.0060,
-          width: 1920,
-          height: 1080,
-          secret: 'secret1',
-          server: 'server1',
-          farm: 1
-        }],
-        dateCreated: '1234567890',
-        dateUpdated: '1234567890'
+        photoCount: 2,
+        photos: [],
+        dateCreated: '1970-01-15T06:56:07.890Z',
+        dateUpdated: '1970-01-15T06:56:07.890Z',
       });
 
       const albums = await flickrService.getAlbums();
@@ -140,111 +60,126 @@ describe('FlickrService', () => {
       expect(albums).toHaveLength(1);
       expect(albums[0].id).toBe('album1');
       expect(albums[0].title).toBe('Album 1');
-      expect(albums[0].photos).toHaveLength(1);
+      expect(mockedJoin).toHaveBeenCalledWith(mockDataDirectory, 'metadata', 'albums.json');
+      expect(mockedReadFileSync).toHaveBeenCalledWith(
+        '/test/data/directory/metadata/albums.json',
+        'utf-8'
+      );
     });
 
-    it('should throw error when API call fails', async () => {
-      const mockResponse = {
-        data: {
-          stat: 'fail',
-          message: 'API Error'
-        }
-      };
+    it('should throw error when albums metadata file not found', async () => {
+      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
+      mockedExistsSync.mockReturnValue(false);
 
-      mockedAxios.get.mockResolvedValue(mockResponse);
-
-      await expect(flickrService.getAlbums()).rejects.toThrow('Flickr API Error: API Error');
+      await expect(flickrService.getAlbums()).rejects.toThrow(
+        'Albums metadata file not found: /test/data/directory/metadata/albums.json'
+      );
     });
   });
 
   describe('getAlbumDetails', () => {
-    it('should fetch album details and photos', async () => {
-      const mockAlbumInfoResponse = {
-        data: {
-          stat: 'ok',
-          photoset: {
+    it('should read album details from local metadata file', async () => {
+      const mockAlbumsData = {
+        albums: [
+          {
             id: 'album1',
-            title: { _content: 'Album 1' },
-            description: { _content: 'Description 1' },
-            photos: '2',
-            date_create: '1234567890',
-            date_update: '1234567890'
-          }
-        }
+            title: 'Album 1',
+            description: 'Description 1',
+            photo_count: '1',
+            created: '1234567890',
+            last_updated: '1234567890',
+            photos: ['photo1'],
+          },
+        ],
       };
 
-      const mockPhotosResponse = {
-        data: {
-          stat: 'ok',
-          photoset: {
-            photo: [
-              {
-                id: 'photo1',
-                title: 'Photo 1',
-                description: { _content: 'Description' },
-                url_o: 'https://example.com/photo1.jpg',
-                datetaken: '2023-01-01',
-                dateupload: '1234567890',
-                tags: 'tag1 tag2',
-                latitude: '40.7128',
-                longitude: '-74.0060',
-                width_o: '1920',
-                height_o: '1080',
-                secret: 'secret1',
-                server: 'server1',
-                farm: 1
-              }
-            ]
-          }
-        }
+      const mockPhotoData = {
+        id: 'photo1',
+        name: 'Photo 1',
+        description: 'Photo description',
+        date_taken: '2023-01-01',
+        date_imported: '1234567890',
+        tags: [{ tag: 'tag1' }, { tag: 'tag2' }],
+        geo: [{ latitude: '40.7128', longitude: '-74.0060' }],
       };
 
-      mockedAxios.get
-        .mockResolvedValueOnce(mockAlbumInfoResponse)
-        .mockResolvedValueOnce(mockPhotosResponse);
+      mockedJoin
+        .mockReturnValueOnce('/test/data/directory/metadata/albums.json')
+        .mockReturnValueOnce('/test/data/directory/metadata/photo_photo1.json');
+
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync
+        .mockReturnValueOnce(JSON.stringify(mockAlbumsData))
+        .mockReturnValueOnce(JSON.stringify(mockPhotoData));
+
+      // Mock getDataFiles to return a photo file
+      jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue(['black_2_o_photo1_o.jpg']);
 
       const album = await flickrService.getAlbumDetails('album1');
 
       expect(album.id).toBe('album1');
       expect(album.title).toBe('Album 1');
       expect(album.description).toBe('Description 1');
-      expect(album.photoCount).toBe(2);
+      expect(album.photoCount).toBe(1);
       expect(album.photos).toHaveLength(1);
       expect(album.photos[0].id).toBe('photo1');
+      expect(album.photos[0].title).toBe('Photo 1');
+    });
+
+    it('should throw error when album not found', async () => {
+      const mockAlbumsData = {
+        albums: [
+          {
+            id: 'album2',
+            title: 'Album 2',
+            description: 'Description 2',
+            photo_count: '1',
+            created: '1234567890',
+            last_updated: '1234567890',
+            photos: ['photo1'],
+          },
+        ],
+      };
+
+      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync.mockReturnValue(JSON.stringify(mockAlbumsData));
+
+      await expect(flickrService.getAlbumDetails('album1')).rejects.toThrow(
+        'Album album1 not found'
+      );
     });
   });
 
-  describe('downloadPhoto', () => {
-    it('should download photo and return buffer', async () => {
+  describe('getPhoto', () => {
+    it('should read photo from local file path', async () => {
       const mockPhoto = {
         id: 'photo1',
-        url: 'https://example.com/photo1.jpg',
+        url: '/test/data/directory/data/black_2_o_photo1_o.jpg',
         title: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
         dateUpload: '1234567890',
         tags: ['tag1'],
-        width: 1920,
-        height: 1080,
-        secret: 'secret1',
-        server: 'server1',
-        farm: 1
+        latitude: 40.7128,
+        longitude: -74.006,
+        width: 0,
+        height: 0,
+        secret: '',
+        server: '',
+        farm: 0,
       };
 
       const mockBuffer = Buffer.from('mock image data');
-      const mockResponse = {
-        data: mockBuffer
-      };
+      mockedReadFileSync.mockReturnValue(mockBuffer);
 
-      mockedAxios.get.mockResolvedValue(mockResponse);
-
-      const result = await flickrService.downloadPhoto(mockPhoto);
+      const result = await flickrService.getPhoto(mockPhoto);
 
       expect(result).toEqual(mockBuffer);
-      expect(mockedAxios.get).toHaveBeenCalledWith(mockPhoto.url, { responseType: 'arraybuffer' });
+      expect(mockedReadFileSync).toHaveBeenCalledWith(mockPhoto.url);
     });
 
-    it('should throw error when download fails', async () => {
+    it('should find photo file in data directory when URL is not a local path', async () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://example.com/photo1.jpg',
@@ -253,16 +188,92 @@ describe('FlickrService', () => {
         dateTaken: '2023-01-01',
         dateUpload: '1234567890',
         tags: ['tag1'],
-        width: 1920,
-        height: 1080,
-        secret: 'secret1',
-        server: 'server1',
-        farm: 1
+        latitude: 40.7128,
+        longitude: -74.006,
+        width: 0,
+        height: 0,
+        secret: '',
+        server: '',
+        farm: 0,
       };
 
-      mockedAxios.get.mockRejectedValue(new Error('Download failed'));
+      const mockBuffer = Buffer.from('mock image data');
 
-      await expect(flickrService.downloadPhoto(mockPhoto)).rejects.toThrow('Download failed');
+      // Mock getDataFiles to return a matching file
+      jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue(['black_2_o_photo1_o.jpg']);
+      mockedJoin.mockReturnValue('/test/data/directory/data/black_2_o_photo1_o.jpg');
+      mockedReadFileSync.mockReturnValue(mockBuffer);
+
+      const result = await flickrService.getPhoto(mockPhoto);
+
+      expect(result).toEqual(mockBuffer);
+      expect(mockedJoin).toHaveBeenCalledWith(mockDataDirectory, 'data', 'black_2_o_photo1_o.jpg');
+    });
+
+    it('should throw error when photo file not found', async () => {
+      const mockPhoto = {
+        id: 'photo1',
+        url: 'https://example.com/photo1.jpg',
+        title: 'Photo 1',
+        description: 'Description',
+        dateTaken: '2023-01-01',
+        dateUpload: '1234567890',
+        tags: ['tag1'],
+        latitude: 40.7128,
+        longitude: -74.006,
+        width: 0,
+        height: 0,
+        secret: '',
+        server: '',
+        farm: 0,
+      };
+
+      // Mock getDataFiles to return no matching files
+      jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue([]);
+
+      await expect(flickrService.getPhoto(mockPhoto)).rejects.toThrow(
+        'Photo file not found for photo photo1'
+      );
+    });
+  });
+
+  describe('getPhotoInfo', () => {
+    it('should read photo info from local metadata file', async () => {
+      const mockPhotoData = {
+        id: 'photo1',
+        name: 'Photo 1',
+        description: 'Photo description',
+        date_taken: '2023-01-01',
+        date_imported: '1234567890',
+        tags: [{ tag: 'tag1' }, { tag: 'tag2' }],
+        geo: [{ latitude: '40.7128', longitude: '-74.0060' }],
+      };
+
+      mockedJoin.mockReturnValue('/test/data/directory/metadata/photo_photo1.json');
+      mockedExistsSync.mockReturnValue(true);
+      mockedReadFileSync.mockReturnValue(JSON.stringify(mockPhotoData));
+
+      // Mock getDataFiles to return a matching file
+      jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue(['black_2_o_photo1_o.jpg']);
+
+      const photo = await flickrService.getPhotoInfo('photo1');
+
+      expect(photo.id).toBe('photo1');
+      expect(photo.title).toBe('Photo 1');
+      expect(photo.description).toBe('Photo description');
+      expect(photo.tags).toEqual(['tag1', 'tag2']);
+      expect(photo.latitude).toBe(40.7128);
+      expect(photo.longitude).toBe(-74.006);
+      expect(mockedJoin).toHaveBeenCalledWith(mockDataDirectory, 'metadata', 'photo_photo1.json');
+    });
+
+    it('should throw error when photo metadata file not found', async () => {
+      mockedJoin.mockReturnValue('/test/data/directory/metadata/photo_photo1.json');
+      mockedExistsSync.mockReturnValue(false);
+
+      await expect(flickrService.getPhotoInfo('photo1')).rejects.toThrow(
+        'Photo metadata file not found: /test/data/directory/metadata/photo_photo1.json'
+      );
     });
   });
 });

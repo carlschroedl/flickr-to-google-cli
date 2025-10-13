@@ -29,11 +29,10 @@ program
 program
   .command('list-albums')
   .description('List all Flickr albums')
-  .option('-u, --user <username>', 'Flickr username')
-  .action(async options => {
+  .action(async () => {
     try {
       const transfer = new FlickrToGoogleTransfer();
-      await transfer.listFlickrAlbums(options.user);
+      await transfer.listFlickrAlbums();
     } catch (error) {
       Logger.error('Failed to list albums:', error);
       process.exit(1);

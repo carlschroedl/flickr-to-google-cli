@@ -10,7 +10,7 @@ async function example() {
     const dataDirectory = resolve('tests/integration/example');
     const flickrService = new FlickrService(dataDirectory);
 
-    console.log('📁 Using bulk export data from:', flickrService.getDataDirectory());
+    console.log('📁 Using bulk export data from:', dataDirectory);
 
     // Get user's albums from bulk export
     console.log('📸 Fetching albums from bulk export...');
