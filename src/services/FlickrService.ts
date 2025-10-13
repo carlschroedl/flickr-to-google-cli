@@ -95,7 +95,7 @@ export class FlickrService {
 
       // Extract dimensions from filename or use defaults
       const dataFiles = this.getDataFiles();
-      const photoFile = dataFiles.find(file => file.includes(`_${photoId}_o.jpg`));
+      const photoFile = dataFiles.find(file => file.endsWith(`_${photoId}_o.jpg`));
 
       // Parse geo data if available
       let latitude: number | undefined;
@@ -143,7 +143,7 @@ export class FlickrService {
 
       // Otherwise, try to find the file in the data directory
       const dataFiles = this.getDataFiles();
-      const photoFile = dataFiles.find(file => file.includes(`_${photo.id}_o.jpg`));
+      const photoFile = dataFiles.find(file => file.endsWith(`_${photo.id}_o.jpg`));
 
       if (photoFile) {
         const filePath = join(this.dataDirectory, 'data', photoFile);
