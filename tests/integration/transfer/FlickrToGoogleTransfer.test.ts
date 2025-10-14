@@ -73,7 +73,8 @@ describe('FlickrToGoogleTransfer Integration', () => {
     mockFlickrService = {
       getAlbums: jest.fn(),
       getAlbumDetails: jest.fn(),
-      downloadPhoto: jest.fn(),
+      getPhoto: jest.fn(),
+      getPhotoInfo: jest.fn(),
     } as any;
 
     mockGooglePhotosService = {

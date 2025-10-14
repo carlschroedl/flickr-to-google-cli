@@ -44,7 +44,11 @@ describe('CLI Commands Integration', () => {
   });
 
   describe('list-albums command', () => {
-    it('should list test albums', done => {
+    it('should list test albums', async () => {
+      /**
+       * This test is implemented with the async/await pattern because the test hung indefinitely.
+       * when implemented with done().
+       */
       const child = spawn(
         'node',
         [cliPath, 'list-albums', '--data-dir', './tests/integration/example'],
@@ -52,16 +56,31 @@ describe('CLI Commands Integration', () => {
       );
 
       let output = '';
+      let errorOutput = '';
+
       child.stdout.on('data', data => {
         output += data.toString();
       });
 
-      child.on('close', code => {
-        expect(code).toBe(0);
-        expect(output).toContain('Found 2 albums');
-        done();
+      child.stderr.on('data', data => {
+        errorOutput += data.toString();
       });
-    });
+
+      const exitCode = await new Promise<number>(resolve => {
+        child.on('close', code => {
+          if (code == null) {
+            fail('The child process did not close with an exit code');
+          } else {
+            resolve(code);
+          }
+        });
+      });
+
+      expect(exitCode).toBe(0);
+      expect(output).toContain('Flickr Albums:');
+      expect(output).toContain('Test Album');
+      expect(output).toContain('Test Album 2');
+    }, 10000); // 10 second timeout
     it('should show help for list-albums command', done => {
       const child = spawn('node', [cliPath, 'list-albums', '--help'], { stdio: 'pipe' });
 
