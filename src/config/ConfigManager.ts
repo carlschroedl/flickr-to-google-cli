@@ -34,20 +34,6 @@ export class ConfigManager {
   async setupCredentials(): Promise<void> {
     Logger.info('Setting up API credentials...\n');
 
-    const flickrApiKey = await input({
-      message: 'Flickr API Key:',
-      validate: (value: string) => value.length > 0 || 'API Key is required',
-    });
-
-    const flickrApiSecret = await password({
-      message: 'Flickr API Secret:',
-      validate: (value: string) => value.length > 0 || 'API Secret is required',
-    });
-
-    const flickrUserId = await input({
-      message: 'Flickr User ID (optional, can be found in your Flickr profile URL):',
-    });
-
     const googleClientId = await input({
       message: 'Google OAuth Client ID:',
       validate: (value: string) => value.length > 0 || 'Client ID is required',
@@ -60,11 +46,6 @@ export class ConfigManager {
 
     const config: Config = {
       credentials: {
-        flickr: {
-          apiKey: flickrApiKey,
-          apiSecret: flickrApiSecret,
-          userId: flickrUserId || undefined,
-        },
         google: {
           clientId: googleClientId,
           clientSecret: googleClientSecret,
@@ -78,8 +59,9 @@ export class ConfigManager {
     await this.saveConfig(config);
     Logger.success('Configuration saved successfully!');
     Logger.info('\nNext steps:');
-    Logger.info('1. Run "flickr-to-google list-albums" to see your Flickr albums');
-    Logger.info('2. Run "flickr-to-google transfer" to start transferring albums');
+    Logger.info('1. Ensure your Flickr bulk export data is in the correct directory');
+    Logger.info('2. Run "flickr-to-google list-albums" to see your Flickr albums');
+    Logger.info('3. Run "flickr-to-google transfer" to start transferring albums');
   }
 
   async getCredentials(): Promise<ApiCredentials> {

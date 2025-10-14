@@ -48,9 +48,9 @@ export interface GoogleAlbum {
 
 export interface TransferOptions {
   albumId?: string;
-  username?: string;
   dryRun?: boolean;
   batchSize?: number;
+  dataDirectory?: string;
 }
 
 export interface TransferJob {
@@ -65,20 +65,7 @@ export interface TransferJob {
   error?: string;
 }
 
-export interface FlickrOAuthTokens {
-  oauthToken: string;
-  oauthTokenSecret: string;
-  userId?: string;
-  username?: string;
-}
-
 export interface ApiCredentials {
-  flickr: {
-    apiKey: string;
-    apiSecret: string;
-    userId?: string;
-    oauthTokens?: FlickrOAuthTokens;
-  };
   google: {
     clientId: string;
     clientSecret: string;

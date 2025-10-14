@@ -42,19 +42,14 @@ describe('ConfigManager', () => {
     it('should return config when file exists', async () => {
       const mockConfig: Config = {
         credentials: {
-          flickr: {
-            apiKey: 'test-key',
-            apiSecret: 'test-secret',
-            userId: 'test-user'
-          },
           google: {
             clientId: 'test-client-id',
-            clientSecret: 'test-client-secret'
-          }
+            clientSecret: 'test-client-secret',
+          },
         },
         defaultBatchSize: 10,
         maxRetries: 3,
-        retryDelay: 1000
+        retryDelay: 1000,
       };
 
       (mockedFs.pathExists as any).mockResolvedValue(true);
@@ -80,18 +75,14 @@ describe('ConfigManager', () => {
     it('should save config to file', async () => {
       const mockConfig: Config = {
         credentials: {
-          flickr: {
-            apiKey: 'test-key',
-            apiSecret: 'test-secret'
-          },
           google: {
             clientId: 'test-client-id',
-            clientSecret: 'test-client-secret'
-          }
+            clientSecret: 'test-client-secret',
+          },
         },
         defaultBatchSize: 10,
         maxRetries: 3,
-        retryDelay: 1000
+        retryDelay: 1000,
       };
 
       mockedFs.writeJson.mockResolvedValue(undefined);
@@ -104,25 +95,23 @@ describe('ConfigManager', () => {
     it('should throw error when save fails', async () => {
       const mockConfig: Config = {
         credentials: {
-          flickr: { apiKey: 'test', apiSecret: 'test' },
-          google: { clientId: 'test', clientSecret: 'test' }
+          google: { clientId: 'test', clientSecret: 'test' },
         },
         defaultBatchSize: 10,
         maxRetries: 3,
-        retryDelay: 1000
+        retryDelay: 1000,
       };
 
       mockedFs.writeJson.mockRejectedValue(new Error('Write error'));
 
-      await expect(configManager.saveConfig(mockConfig)).rejects.toThrow('Failed to save config: Error: Write error');
+      await expect(configManager.saveConfig(mockConfig)).rejects.toThrow(
+        'Failed to save config: Error: Write error'
+      );
     });
   });
 
   describe('setupCredentials', () => {
     it('should prompt for credentials and save config', async () => {
-      mockedInput.mockResolvedValueOnce('test-api-key');
-      mockedPassword.mockResolvedValueOnce('test-api-secret');
-      mockedInput.mockResolvedValueOnce('test-user-id');
       mockedInput.mockResolvedValueOnce('test-client-id');
       mockedPassword.mockResolvedValueOnce('test-client-secret');
 
@@ -132,26 +121,24 @@ describe('ConfigManager', () => {
 
       await configManager.setupCredentials();
 
-      expect(mockedInput).toHaveBeenCalledTimes(3);
-      expect(mockedPassword).toHaveBeenCalledTimes(2);
+      expect(mockedInput).toHaveBeenCalledTimes(1);
+      expect(mockedPassword).toHaveBeenCalledTimes(1);
       expect(mockedFs.writeJson).toHaveBeenCalledWith(
         mockConfigPath,
         expect.objectContaining({
           credentials: {
-            flickr: {
-              apiKey: 'test-api-key',
-              apiSecret: 'test-api-secret',
-              userId: 'test-user-id'
-            },
             google: {
               clientId: 'test-client-id',
-              clientSecret: 'test-client-secret'
-            }
-          }
+              clientSecret: 'test-client-secret',
+            },
+          },
         }),
         { spaces: 2 }
       );
-      expect(consoleSpy).toHaveBeenCalledWith(expect.any(String), 'Configuration saved successfully!');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        'Configuration saved successfully!'
+      );
     });
   });
 
@@ -159,19 +146,14 @@ describe('ConfigManager', () => {
     it('should return credentials when config exists', async () => {
       const mockConfig: Config = {
         credentials: {
-          flickr: {
-            apiKey: 'test-key',
-            apiSecret: 'test-secret',
-            userId: 'test-user'
-          },
           google: {
             clientId: 'test-client-id',
-            clientSecret: 'test-client-secret'
-          }
+            clientSecret: 'test-client-secret',
+          },
         },
         defaultBatchSize: 10,
         maxRetries: 3,
-        retryDelay: 1000
+        retryDelay: 1000,
       };
 
       (mockedFs.pathExists as any).mockResolvedValue(true);

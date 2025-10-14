@@ -29,10 +29,11 @@ program
 program
   .command('list-albums')
   .description('List all Flickr albums')
-  .action(async () => {
+  .option('--data-dir <directory>', 'Flickr bulk export data directory', './flickr-export')
+  .action(async options => {
     try {
       const transfer = new FlickrToGoogleTransfer();
-      await transfer.listFlickrAlbums();
+      await transfer.listFlickrAlbums(options.dataDir);
     } catch (error) {
       Logger.error('Failed to list albums:', error);
       process.exit(1);
@@ -43,17 +44,17 @@ program
   .command('transfer')
   .description('Transfer albums from Flickr to Google Photos')
   .option('-a, --album <albumId>', 'Specific album ID to transfer')
-  .option('-u, --user <username>', 'Flickr username')
   .option('-d, --dry-run', 'Preview what would be transferred without actually transferring')
   .option('--batch-size <size>', 'Number of photos to process in each batch', '10')
+  .option('--data-dir <directory>', 'Flickr bulk export data directory', './flickr-export')
   .action(async options => {
     try {
       const transfer = new FlickrToGoogleTransfer();
       await transfer.transferAlbums({
         albumId: options.album,
-        username: options.user,
         dryRun: options.dryRun,
         batchSize: parseInt(options.batchSize),
+        dataDirectory: options.dataDir,
       });
     } catch (error) {
       Logger.error('Transfer failed:', error);

@@ -102,11 +102,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
   describe('initialize', () => {
     it('should initialize services with credentials', async () => {
       const mockCredentials = {
-        flickr: {
-          apiKey: 'test-key',
-          apiSecret: 'test-secret',
-          userId: 'test-user',
-        },
         google: {
           clientId: 'test-client-id',
           clientSecret: 'test-client-secret',
@@ -117,7 +112,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       await transfer.initialize();
 
-      expect(MockedFlickrService).toHaveBeenCalledWith(mockCredentials.flickr);
       expect(MockedGooglePhotosService).toHaveBeenCalledWith(mockCredentials.google);
     });
   });
@@ -125,7 +119,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
   describe('listFlickrAlbums', () => {
     it('should list albums successfully', async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
-        flickr: { apiKey: 'test', apiSecret: 'test' },
         google: { clientId: 'test', clientSecret: 'test' },
       });
 
@@ -144,7 +137,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
     it('should handle errors gracefully', async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
-        flickr: { apiKey: 'test', apiSecret: 'test' },
         google: { clientId: 'test', clientSecret: 'test' },
       });
 
@@ -157,7 +149,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
   describe('transferAlbums', () => {
     beforeEach(async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
-        flickr: { apiKey: 'test', apiSecret: 'test' },
         google: { clientId: 'test', clientSecret: 'test' },
       });
 
@@ -173,7 +164,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         mediaItemsCount: 0,
         isWriteable: true,
       });
-      mockFlickrService.downloadPhoto.mockResolvedValue(Buffer.from('mock image data'));
+      mockFlickrService.getPhoto.mockResolvedValue(Buffer.from('mock image data'));
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
       mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
       mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
@@ -191,7 +182,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         'Test Album',
         'Test Description'
       );
-      expect(mockFlickrService.downloadPhoto).toHaveBeenCalledTimes(2);
+      expect(mockFlickrService.getPhoto).toHaveBeenCalledTimes(2);
       expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(2);
       expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', [
         'google-photo-id',
@@ -219,7 +210,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       expect(mockFlickrService.getAlbumDetails).toHaveBeenCalledWith('album1');
       expect(mockGooglePhotosService.createAlbum).not.toHaveBeenCalled();
-      expect(mockFlickrService.downloadPhoto).not.toHaveBeenCalled();
+      expect(mockFlickrService.getPhoto).not.toHaveBeenCalled();
       expect(mockGooglePhotosService.uploadPhoto).not.toHaveBeenCalled();
     });
 
@@ -241,7 +232,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         mediaItemsCount: 0,
         isWriteable: true,
       });
-      mockFlickrService.downloadPhoto.mockResolvedValue(Buffer.from('mock image data'));
+      mockFlickrService.getPhoto.mockResolvedValue(Buffer.from('mock image data'));
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
       mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
       mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
@@ -255,7 +246,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
       await transfer.transferAlbums(options);
 
       // Should process in batches of 10
-      expect(mockFlickrService.downloadPhoto).toHaveBeenCalledTimes(25);
+      expect(mockFlickrService.getPhoto).toHaveBeenCalledTimes(25);
       expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(25);
     });
 
@@ -270,7 +261,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
       });
 
       // First photo download fails, second succeeds
-      mockFlickrService.downloadPhoto
+      mockFlickrService.getPhoto
         .mockRejectedValueOnce(new Error('Download failed'))
         .mockResolvedValueOnce(Buffer.from('mock image data'));
 
@@ -297,7 +288,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
   describe('checkTransferStatus', () => {
     beforeEach(async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
-        flickr: { apiKey: 'test', apiSecret: 'test' },
         google: { clientId: 'test', clientSecret: 'test' },
       });
 
