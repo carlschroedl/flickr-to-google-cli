@@ -1,17 +1,32 @@
 import { GooglePhotosService } from '../../../src/services/GooglePhotosService';
 import { ApiCredentials } from '../../../src/types';
-import axios from 'axios';
 
-// Mock axios
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// Mock googleapis
+jest.mock('googleapis', () => ({
+  google: {
+    auth: {
+      OAuth2: jest.fn().mockImplementation(() => ({
+        setCredentials: jest.fn(),
+        refreshAccessToken: jest.fn(),
+        request: jest.fn(),
+        credentials: {
+          access_token: 'test-access-token',
+          refresh_token: 'test-refresh-token',
+          expiry_date: Date.now() + 3600000,
+        },
+      })),
+    },
+  },
+}));
 
 describe('GooglePhotosService', () => {
   let googlePhotosService: GooglePhotosService;
   const mockCredentials: ApiCredentials['google'] = {
     clientId: 'test-client-id',
     clientSecret: 'test-client-secret',
-    refreshToken: 'test-refresh-token'
+    refreshToken: 'test-refresh-token',
+    accessToken: 'test-access-token',
+    tokenExpiry: Date.now() + 3600000,
   };
 
   beforeEach(() => {
@@ -25,63 +40,20 @@ describe('GooglePhotosService', () => {
     });
   });
 
-  describe('getAccessToken', () => {
-    it('should return cached access token when available', async () => {
-      // Set a cached token
-      (googlePhotosService as any).accessToken = 'cached-token';
-      
-      const result = await (googlePhotosService as any).getAccessToken();
-      
-      expect(result).toBe('cached-token');
-      expect(mockedAxios.post).not.toHaveBeenCalled();
-    });
-
-    it('should fetch new access token when not cached', async () => {
-      const mockResponse = {
-        data: {
-          access_token: 'new-access-token'
-        }
-      };
-
-      mockedAxios.post.mockResolvedValue(mockResponse);
-
-      const result = await (googlePhotosService as any).getAccessToken();
-
-      expect(result).toBe('new-access-token');
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        'https://oauth2.googleapis.com/token',
-        {
-          client_id: 'test-client-id',
-          client_secret: 'test-client-secret',
-          refresh_token: 'test-refresh-token',
-          grant_type: 'refresh_token'
-        }
-      );
-    });
-
-    it('should throw error when no refresh token available', async () => {
-      const serviceWithoutRefreshToken = new GooglePhotosService({
-        clientId: 'test-client-id',
-        clientSecret: 'test-client-secret'
-      });
-
-      await expect((serviceWithoutRefreshToken as any).getAccessToken()).rejects.toThrow(
-        'No refresh token available. Please re-authenticate.'
-      );
-    });
-  });
-
   describe('createAlbum', () => {
     it('should create album successfully', async () => {
-      const mockResponse = {
-        data: {
-          id: 'album-id',
-          title: 'Test Album',
-          description: 'Test Description'
-        }
+      const mockAlbum = {
+        id: 'album-id',
+        title: 'Test Album',
+        description: 'Test Description',
+        mediaItemsCount: 0,
+        isWriteable: true,
       };
 
-      (mockedAxios as any).mockResolvedValue(mockResponse);
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({
+        data: mockAlbum,
+      });
 
       const result = await googlePhotosService.createAlbum('Test Album', 'Test Description');
 
@@ -90,161 +62,206 @@ describe('GooglePhotosService', () => {
         title: 'Test Album',
         description: 'Test Description',
         mediaItemsCount: 0,
-        isWriteable: true
+        coverPhotoBaseUrl: undefined,
+        isWriteable: true,
+      });
+      expect(mockAuth.request).toHaveBeenCalledWith({
+        method: 'POST',
+        url: 'https://photoslibrary.googleapis.com/v1/albums',
+        headers: {
+          Authorization: 'Bearer test-access-token',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          album: {
+            title: 'Test Album',
+            description: 'Test Description',
+          },
+        },
       });
     });
 
     it('should throw error when creation fails', async () => {
-      (mockedAxios as any).mockRejectedValue(new Error('Creation failed'));
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockRejectedValue(new Error('API Error'));
 
-      await expect(googlePhotosService.createAlbum('Test Album')).rejects.toThrow('Creation failed');
+      await expect(googlePhotosService.createAlbum('Test Album')).rejects.toThrow('API Error');
     });
   });
 
   describe('getAlbums', () => {
     it('should fetch and return albums', async () => {
-      const mockResponse = {
-        data: {
-          albums: [
-            {
-              id: 'album1',
-              title: 'Album 1',
-              description: 'Description 1',
-              mediaItemsCount: 5,
-              isWriteable: true
-            }
-          ]
-        }
-      };
+      const mockAlbums = [
+        {
+          id: 'album-1',
+          title: 'Album 1',
+          description: 'Description 1',
+          mediaItemsCount: 5,
+          isWriteable: true,
+        },
+        {
+          id: 'album-2',
+          title: 'Album 2',
+          description: 'Description 2',
+          mediaItemsCount: 3,
+          isWriteable: false,
+        },
+      ];
 
-      (mockedAxios as any).mockResolvedValue(mockResponse);
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({
+        data: { albums: mockAlbums },
+      });
 
-      const albums = await googlePhotosService.getAlbums();
+      const result = await googlePhotosService.getAlbums();
 
-      expect(albums).toHaveLength(1);
-      expect(albums[0].id).toBe('album1');
-      expect(albums[0].title).toBe('Album 1');
+      expect(result).toEqual([
+        {
+          id: 'album-1',
+          title: 'Album 1',
+          description: 'Description 1',
+          mediaItemsCount: 5,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: true,
+        },
+        {
+          id: 'album-2',
+          title: 'Album 2',
+          description: 'Description 2',
+          mediaItemsCount: 3,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: false,
+        },
+      ]);
+      expect(mockAuth.request).toHaveBeenCalledWith({
+        method: 'GET',
+        url: 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50',
+        headers: {
+          Authorization: 'Bearer test-access-token',
+          'Content-Type': 'application/json',
+        },
+      });
     });
 
     it('should return empty array when no albums', async () => {
-      const mockResponse = {
-        data: {}
-      };
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({
+        data: { albums: [] },
+      });
 
-      (mockedAxios as any).mockResolvedValue(mockResponse);
+      const result = await googlePhotosService.getAlbums();
 
-      const albums = await googlePhotosService.getAlbums();
-
-      expect(albums).toEqual([]);
+      expect(result).toEqual([]);
     });
   });
 
   describe('uploadPhoto', () => {
     it('should upload photo successfully', async () => {
-      const mockUploadToken = 'upload-token';
-      const mockPhotoId = 'photo-id';
-      const mockBuffer = Buffer.from('mock image data');
+      const mockPhotoBuffer = Buffer.from('test image data');
+      const mockAuth = (googlePhotosService as any).auth;
 
-      // Mock uploadBinary
-      jest.spyOn(googlePhotosService as any, 'uploadBinary').mockResolvedValue(mockUploadToken);
+      // Mock the upload response
+      mockAuth.request
+        .mockResolvedValueOnce({ data: 'upload-token' }) // First call for upload
+        .mockResolvedValueOnce({
+          // Second call for batchCreate
+          data: {
+            newMediaItemResults: [{ mediaItem: { id: 'photo-id' } }],
+          },
+        });
 
-      const mockResponse = {
-        data: {
-          newMediaItemResults: [
-            {
-              mediaItem: {
-                id: mockPhotoId
-              }
-            }
-          ]
-        }
-      };
+      const result = await googlePhotosService.uploadPhoto(mockPhotoBuffer, 'test.jpg');
 
-      (mockedAxios as any).mockResolvedValue(mockResponse);
-
-      const result = await googlePhotosService.uploadPhoto(mockBuffer, 'test.jpg', 'image/jpeg');
-
-      expect(result).toBe(mockPhotoId);
+      expect(result).toBe('photo-id');
+      expect(mockAuth.request).toHaveBeenCalledTimes(2);
     });
 
     it('should throw error when upload fails', async () => {
-      const mockBuffer = Buffer.from('mock image data');
+      const mockPhotoBuffer = Buffer.from('test image data');
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockRejectedValue(new Error('Upload failed'));
 
-      jest.spyOn(googlePhotosService as any, 'uploadBinary').mockRejectedValue(new Error('Upload failed'));
-
-      await expect(googlePhotosService.uploadPhoto(mockBuffer, 'test.jpg', 'image/jpeg')).rejects.toThrow('Upload failed');
+      await expect(googlePhotosService.uploadPhoto(mockPhotoBuffer, 'test.jpg')).rejects.toThrow(
+        'Upload failed'
+      );
     });
   });
 
   describe('addPhotosToAlbum', () => {
     it('should add photos to album successfully', async () => {
-      const mockResponse = {
-        data: {}
-      };
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({ data: {} });
 
-      (mockedAxios as any).mockResolvedValue(mockResponse);
+      await googlePhotosService.addPhotosToAlbum('album-id', ['photo-1', 'photo-2']);
 
-      await googlePhotosService.addPhotosToAlbum('album-id', ['photo1', 'photo2']);
-
-      expect(mockedAxios).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'POST',
-          url: 'https://photoslibrary.googleapis.com/v1/albums/album-id:batchAddMediaItems',
-          data: {
-            mediaItemIds: ['photo1', 'photo2']
-          }
-        })
-      );
+      expect(mockAuth.request).toHaveBeenCalledWith({
+        method: 'POST',
+        url: 'https://photoslibrary.googleapis.com/v1/albums/album-id:batchAddMediaItems',
+        headers: {
+          Authorization: 'Bearer test-access-token',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          mediaItemIds: ['photo-1', 'photo-2'],
+        },
+      });
     });
   });
 
   describe('updatePhotoMetadata', () => {
     it('should update photo description', async () => {
-      const mockResponse = {
-        data: {}
-      };
-
-      (mockedAxios as any).mockResolvedValue(mockResponse);
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({ data: {} });
 
       await googlePhotosService.updatePhotoMetadata('photo-id', 'New description');
 
-      expect(mockedAxios).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'PATCH',
-          url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
-          data: {
-            description: 'New description'
-          }
-        })
-      );
+      expect(mockAuth.request).toHaveBeenCalledWith({
+        method: 'PATCH',
+        url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
+        headers: {
+          Authorization: 'Bearer test-access-token',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          id: 'photo-id',
+          description: 'New description',
+        },
+      });
     });
 
     it('should update photo location', async () => {
-      const mockResponse = {
-        data: {}
-      };
-
-      (mockedAxios as any).mockResolvedValue(mockResponse);
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({ data: {} });
 
       await googlePhotosService.updatePhotoMetadata('photo-id', undefined, {
         latitude: 40.7128,
-        longitude: -74.0060
+        longitude: -74.006,
       });
 
-      expect(mockedAxios).toHaveBeenCalledWith(
-        expect.objectContaining({
-          method: 'PATCH',
-          url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
-          data: {
-            location: {
-              latlng: {
-                latitude: 40.7128,
-                longitude: -74.0060
-              }
-            }
-          }
-        })
-      );
+      expect(mockAuth.request).toHaveBeenCalledWith({
+        method: 'PATCH',
+        url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
+        headers: {
+          Authorization: 'Bearer test-access-token',
+          'Content-Type': 'application/json',
+        },
+        data: {
+          id: 'photo-id',
+          location: {
+            latlng: {
+              latitude: 40.7128,
+              longitude: -74.006,
+            },
+          },
+        },
+      });
+    });
+  });
+
+  describe('getAccessToken', () => {
+    it('should return access token', async () => {
+      const result = await googlePhotosService.getAccessToken();
+      expect(result).toBe('test-access-token');
     });
   });
 });

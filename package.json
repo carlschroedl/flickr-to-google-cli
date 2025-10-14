@@ -40,7 +40,9 @@
     "dotenv": "^16.3.1",
     "flickr-sdk": "^7.1.0",
     "fs-extra": "^11.2.0",
+    "googleapis": "^162.0.0",
     "mime-types": "^2.1.35",
+    "oauth-callback": "^1.2.1",
     "ora": "^5.4.1"
   },
   "devDependencies": {

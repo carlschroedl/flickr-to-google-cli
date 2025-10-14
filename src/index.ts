@@ -27,6 +27,20 @@ program
   });
 
 program
+  .command('authenticate')
+  .description('Complete OAuth authentication with Google Photos')
+  .action(async () => {
+    try {
+      const configManager = new ConfigManager();
+      await configManager.authenticate();
+      Logger.success('Authentication completed successfully!');
+    } catch (error) {
+      Logger.error('Authentication failed:', error);
+      process.exit(1);
+    }
+  });
+
+program
   .command('list-albums')
   .description('List all Flickr albums')
   .option('--data-dir <directory>', 'Flickr bulk export data directory', './flickr-export')

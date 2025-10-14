@@ -70,6 +70,8 @@ export interface ApiCredentials {
     clientId: string;
     clientSecret: string;
     refreshToken?: string;
+    accessToken?: string;
+    tokenExpiry?: number;
   };
 }
 

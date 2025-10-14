@@ -179,11 +179,7 @@ export class FlickrToGoogleTransfer {
           const filename = `${photo.id}.${mime.extension(mimeType) || 'jpg'}`;
 
           // Upload to Google Photos
-          const googlePhotoId = await this.googlePhotosService.uploadPhoto(
-            photoBuffer,
-            filename,
-            mimeType
-          );
+          const googlePhotoId = await this.googlePhotosService.uploadPhoto(photoBuffer, filename);
 
           // Update metadata
           if (photo.description || (photo.latitude && photo.longitude)) {
