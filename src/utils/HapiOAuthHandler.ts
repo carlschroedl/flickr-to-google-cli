@@ -127,7 +127,24 @@ export class HapiOAuthHandler {
     h.response(html).type('text/html');
   }
 
+  /**
+   * Escapes HTML special characters to prevent XSS attacks
+   * @param unsafe The unsafe string that may contain HTML
+   * @returns The escaped string safe for HTML insertion
+   */
+  private escapeHtml(unsafe: string): string {
+    return unsafe
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   private sendErrorPage(h: any, error: string, description?: string): void {
+    const escapedError = this.escapeHtml(error);
+    const escapedDescription = description ? this.escapeHtml(description) : '';
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -159,7 +176,7 @@ export class HapiOAuthHandler {
         <body>
           <div class="error">❌ Authentication Failed</div>
           <div class="message">There was an error during authentication.</div>
-          <div class="details">Error: ${error}${description ? `<br>Description: ${description}` : ''}</div>
+          <div class="details">Error: ${escapedError}${escapedDescription ? `<br>Description: ${escapedDescription}` : ''}</div>
         </body>
       </html>
     `;
