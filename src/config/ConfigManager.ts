@@ -1,10 +1,10 @@
 import { input, password } from '@inquirer/prompts';
 import fs from 'fs-extra';
 import { google } from 'googleapis';
-import { getAuthCode } from 'oauth-callback';
 import path from 'path';
 import { ApiCredentials, Config } from '../types';
 import { Logger } from '../utils/Logger';
+import { getAuthCode } from '../utils/OAuthCallbackHandler';
 
 export class ConfigManager {
   private configPath: string;
