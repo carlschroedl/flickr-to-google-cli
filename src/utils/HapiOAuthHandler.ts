@@ -1,5 +1,5 @@
 import { Server } from '@hapi/hapi';
-import { spawn } from 'child_process';
+import { BrowserOpener } from './BrowserOpener';
 import { Logger } from './Logger';
 
 export interface OAuthCallbackOptions {
@@ -32,7 +32,7 @@ export class HapiOAuthHandler {
       }, timeout);
 
       this.createServer(port)
-        .then(() => this.openBrowser(authorizationUrl))
+        .then(() => BrowserOpener.openBrowser(authorizationUrl))
         .catch(error => {
           this.cleanup();
           reject(error);
@@ -165,53 +165,6 @@ export class HapiOAuthHandler {
     `;
 
     h.response(html).type('text/html');
-  }
-
-  private async openBrowser(url: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const platform = process.platform;
-      let command: string;
-      let args: string[];
-
-      switch (platform) {
-        case 'win32':
-          command = 'cmd';
-          args = ['/c', 'start', '', url];
-          break;
-        case 'darwin':
-          command = 'open';
-          args = [url];
-          break;
-        default: // linux and others
-          command = 'xdg-open';
-          args = [url];
-          break;
-      }
-
-      const child = spawn(command, args, {
-        stdio: 'ignore',
-        detached: true,
-      });
-
-      child.on('error', error => {
-        Logger.warning(`Failed to open browser automatically: ${error.message}`);
-        Logger.info(`Please open this URL in your browser: ${url}`);
-        resolve(); // Don't reject, just log and continue
-      });
-
-      child.on('close', code => {
-        if (code === 0) {
-          resolve();
-        } else {
-          Logger.warning(`Browser process exited with code ${code}`);
-          Logger.info(`Please open this URL in your browser: ${url}`);
-          resolve(); // Don't reject, just log and continue
-        }
-      });
-
-      // Unref to allow the process to exit even if this child is still running
-      child.unref();
-    });
   }
 
   private cleanup(): void {

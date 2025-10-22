@@ -1,5 +1,4 @@
 import { HapiOAuthHandler, getAuthCode } from '../../../src/utils/HapiOAuthHandler';
-import { Logger } from '../../../src/utils/Logger';
 
 // Mock the Logger
 jest.mock('../../../src/utils/Logger', () => ({
@@ -26,6 +25,13 @@ const mockServer = {
 
 jest.mock('@hapi/hapi', () => ({
   Server: jest.fn(() => mockServer),
+}));
+
+// Mock BrowserOpener
+jest.mock('../../../src/utils/BrowserOpener', () => ({
+  BrowserOpener: {
+    openBrowser: jest.fn(),
+  },
 }));
 
 describe('HapiOAuthHandler', () => {
@@ -62,128 +68,6 @@ describe('HapiOAuthHandler', () => {
 
       await expect(handler.getAuthCode(options)).rejects.toThrow(
         'OAuth authentication timed out. Please try again.'
-      );
-    });
-  });
-
-  describe('openBrowser', () => {
-    it('should open browser on Windows', async () => {
-      const originalPlatform = process.platform;
-      Object.defineProperty(process, 'platform', { value: 'win32' });
-
-      const mockChildProcess = {
-        on: jest.fn(),
-        unref: jest.fn(),
-      };
-      mockSpawn.mockReturnValue(mockChildProcess);
-
-      mockChildProcess.on.mockImplementation((event: string, callback: (code: number) => void) => {
-        if (event === 'close') {
-          setTimeout(() => callback(0), 10);
-        }
-      });
-
-      await handler['openBrowser']('https://example.com');
-
-      expect(mockSpawn).toHaveBeenCalledWith('cmd', ['/c', 'start', '', 'https://example.com'], {
-        stdio: 'ignore',
-        detached: true,
-      });
-
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
-    });
-
-    it('should open browser on macOS', async () => {
-      const originalPlatform = process.platform;
-      Object.defineProperty(process, 'platform', { value: 'darwin' });
-
-      const mockChildProcess = {
-        on: jest.fn(),
-        unref: jest.fn(),
-      };
-      mockSpawn.mockReturnValue(mockChildProcess);
-
-      mockChildProcess.on.mockImplementation((event: string, callback: (code: number) => void) => {
-        if (event === 'close') {
-          setTimeout(() => callback(0), 10);
-        }
-      });
-
-      await handler['openBrowser']('https://example.com');
-
-      expect(mockSpawn).toHaveBeenCalledWith('open', ['https://example.com'], {
-        stdio: 'ignore',
-        detached: true,
-      });
-
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
-    });
-
-    it('should open browser on Linux', async () => {
-      const originalPlatform = process.platform;
-      Object.defineProperty(process, 'platform', { value: 'linux' });
-
-      const mockChildProcess = {
-        on: jest.fn(),
-        unref: jest.fn(),
-      };
-      mockSpawn.mockReturnValue(mockChildProcess);
-
-      mockChildProcess.on.mockImplementation((event: string, callback: (code: number) => void) => {
-        if (event === 'close') {
-          setTimeout(() => callback(0), 10);
-        }
-      });
-
-      await handler['openBrowser']('https://example.com');
-
-      expect(mockSpawn).toHaveBeenCalledWith('xdg-open', ['https://example.com'], {
-        stdio: 'ignore',
-        detached: true,
-      });
-
-      Object.defineProperty(process, 'platform', { value: originalPlatform });
-    });
-
-    it('should handle browser opening failure gracefully', async () => {
-      const mockChildProcess = {
-        on: jest.fn(),
-        unref: jest.fn(),
-      };
-      mockSpawn.mockReturnValue(mockChildProcess);
-
-      mockChildProcess.on.mockImplementation((event: string, callback: (error: Error) => void) => {
-        if (event === 'error') {
-          setTimeout(() => callback(new Error('Browser failed')), 10);
-        }
-      });
-
-      // Should not throw, just log warning
-      await handler['openBrowser']('https://example.com');
-
-      expect(Logger.warning).toHaveBeenCalledWith(
-        expect.stringContaining('Failed to open browser automatically')
-      );
-    });
-
-    it('should handle browser process exit with non-zero code', async () => {
-      const mockChildProcess = {
-        on: jest.fn(),
-        unref: jest.fn(),
-      };
-      mockSpawn.mockReturnValue(mockChildProcess);
-
-      mockChildProcess.on.mockImplementation((event: string, callback: (code: number) => void) => {
-        if (event === 'close') {
-          setTimeout(() => callback(1), 10);
-        }
-      });
-
-      // Should not throw, just log warning
-      await handler['openBrowser']('https://example.com');
-
-      expect(Logger.warning).toHaveBeenCalledWith(
-        expect.stringContaining('Browser process exited with code 1')
       );
     });
   });
