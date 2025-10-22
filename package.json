@@ -33,6 +33,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@hapi/hapi": "^21.3.0",
+    "@hapi/inert": "^7.1.0",
     "@inquirer/prompts": "^4.0.0",
     "axios": "^1.6.2",
     "chalk": "^4.1.2",
@@ -41,13 +43,13 @@
     "flickr-sdk": "^7.1.0",
     "fs-extra": "^11.2.0",
     "googleapis": "^162.0.0",
+    "handlebars": "^4.7.8",
     "mime-types": "^2.1.35",
-    "@hapi/hapi": "^21.3.0",
-    "@hapi/inert": "^7.1.0",
     "ora": "^5.4.1"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
+    "@types/handlebars": "^4.1.0",
     "@types/jest": "^29.5.8",
     "@types/mime-types": "^2.1.4",
     "@types/node": "^20.19.19",

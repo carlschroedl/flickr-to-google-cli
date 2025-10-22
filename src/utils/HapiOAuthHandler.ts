@@ -1,4 +1,5 @@
 import { Server } from '@hapi/hapi';
+import Handlebars from 'handlebars';
 import { BrowserOpener } from './BrowserOpener';
 import { Logger } from './Logger';
 
@@ -127,25 +128,8 @@ export class HapiOAuthHandler {
     h.response(html).type('text/html');
   }
 
-  /**
-   * Escapes HTML special characters to prevent XSS attacks
-   * @param unsafe The unsafe string that may contain HTML
-   * @returns The escaped string safe for HTML insertion
-   */
-  private escapeHtml(unsafe: string): string {
-    return unsafe
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-
   private sendErrorPage(h: any, error: string, description?: string): void {
-    const escapedError = this.escapeHtml(error);
-    const escapedDescription = description ? this.escapeHtml(description) : '';
-
-    const html = `
+    const template = Handlebars.compile(`
       <!DOCTYPE html>
       <html>
         <head>
@@ -176,10 +160,15 @@ export class HapiOAuthHandler {
         <body>
           <div class="error">❌ Authentication Failed</div>
           <div class="message">There was an error during authentication.</div>
-          <div class="details">Error: ${escapedError}${escapedDescription ? `<br>Description: ${escapedDescription}` : ''}</div>
+          <div class="details">Error: {{error}}{{#if description}}<br>Description: {{description}}{{/if}}</div>
         </body>
       </html>
-    `;
+    `);
+
+    const html = template({
+      error: error,
+      description: description,
+    });
 
     h.response(html).type('text/html');
   }

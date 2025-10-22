@@ -177,11 +177,11 @@ describe('HapiOAuthHandler', () => {
       expect(htmlResponse).toContain('&lt;');
       expect(htmlResponse).toContain('&gt;');
 
-      // Verify the actual escaped content
+      // Verify the actual escaped content (Handlebars uses different escaping)
       expect(htmlResponse).toContain(
-        '&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;div class=&quot;'
+        '&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;div class&#x3D;&quot;'
       );
-      expect(htmlResponse).toContain('test&quot; onload=&quot;alert(3)');
+      expect(htmlResponse).toContain('test&quot; onload&#x3D;&quot;alert(3)');
     });
   });
 
