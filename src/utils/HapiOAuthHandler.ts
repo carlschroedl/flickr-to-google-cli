@@ -1,6 +1,5 @@
+import { Server } from '@hapi/hapi';
 import { spawn } from 'child_process';
-import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { URL } from 'url';
 import { Logger } from './Logger';
 
 export interface OAuthCallbackOptions {
@@ -13,8 +12,8 @@ export interface OAuthCallbackResult {
   code: string;
 }
 
-export class OAuthCallbackHandler {
-  private server: any = null;
+export class HapiOAuthHandler {
+  private server: Server | null = null;
   private resolvePromise: ((result: OAuthCallbackResult) => void) | null = null;
   private rejectPromise: ((error: Error) => void) | null = null;
   private timeoutId: NodeJS.Timeout | null = null;
@@ -32,73 +31,69 @@ export class OAuthCallbackHandler {
         reject(new Error('OAuth authentication timed out. Please try again.'));
       }, timeout);
 
-      // Create HTTP server
-      this.server = createServer((req: IncomingMessage, res: ServerResponse) => {
-        this.handleRequest(req, res);
-      });
-
-      // Start server
-      this.server.listen(port, 'localhost', () => {
-        Logger.info(`OAuth callback server started on port ${port}`);
-
-        // Open browser to authorization URL
-        this.openBrowser(authorizationUrl).catch(error => {
-          Logger.warning(`Failed to open browser automatically: ${error.message}`);
-          Logger.info(`Please open this URL in your browser: ${authorizationUrl}`);
-        });
-      });
-
-      // Handle server errors
-      this.server.on('error', (error: NodeJS.ErrnoException) => {
-        if (error.code === 'EADDRINUSE') {
-          this.cleanup();
-          reject(new Error(`Port ${port} is already in use. Please try again.`));
-        } else {
+      this.createServer(port)
+        .then(() => this.openBrowser(authorizationUrl))
+        .catch(error => {
           this.cleanup();
           reject(error);
-        }
-      });
+        });
     });
   }
 
-  private handleRequest(req: IncomingMessage, res: ServerResponse): void {
-    const url = new URL(req.url || '', `http://localhost:${this.server?.address()?.port || 3000}`);
-    const code = url.searchParams.get('code');
-    const error = url.searchParams.get('error');
-    const errorDescription = url.searchParams.get('error_description') || 'Unknown error';
+  private async createServer(port: number): Promise<void> {
+    try {
+      this.server = new Server({
+        port,
+        host: 'localhost',
+        routes: {
+          cors: {
+            origin: ['*'],
+            credentials: true,
+          },
+        },
+      });
 
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      // Register the OAuth callback route
+      this.server.route({
+        method: 'GET',
+        path: '/oauth2callback',
+        handler: (request, h) => {
+          const { code, error, error_description } = request.query;
 
-    if (req.method === 'OPTIONS') {
-      res.writeHead(200);
-      res.end();
-      return;
-    }
+          if (error) {
+            this.sendErrorPage(h, error, error_description);
+            this.cleanup();
+            this.rejectPromise?.(
+              new Error(`OAuth error: ${error} - ${error_description || 'Unknown error'}`)
+            );
+            return h.response().code(400);
+          }
 
-    if (error) {
-      this.sendErrorPage(res, error, errorDescription || undefined);
-      this.cleanup();
-      this.rejectPromise?.(
-        new Error(`OAuth error: ${error} - ${errorDescription || 'Unknown error'}`)
-      );
-      return;
-    }
+          if (code) {
+            this.sendSuccessPage(h);
+            this.cleanup();
+            this.resolvePromise?.({ code });
+            return h.response().code(200);
+          }
 
-    if (code) {
-      this.sendSuccessPage(res);
-      this.cleanup();
-      this.resolvePromise?.({ code });
-    } else {
-      this.sendErrorPage(res, 'missing_code', 'Authorization code not found in callback URL');
-      this.cleanup();
-      this.rejectPromise?.(new Error('Authorization code not found in callback URL'));
+          this.sendErrorPage(h, 'missing_code', 'Authorization code not found in callback URL');
+          this.cleanup();
+          this.rejectPromise?.(new Error('Authorization code not found in callback URL'));
+          return h.response().code(400);
+        },
+      });
+
+      await this.server.start();
+      Logger.info(`OAuth callback server started on port ${port}`);
+    } catch (error: any) {
+      if (error.code === 'EADDRINUSE') {
+        throw new Error(`Port ${port} is already in use. Please try again.`);
+      }
+      throw error;
     }
   }
 
-  private sendSuccessPage(res: ServerResponse): void {
+  private sendSuccessPage(h: any): void {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -129,11 +124,10 @@ export class OAuthCallbackHandler {
       </html>
     `;
 
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(html);
+    h.response(html).type('text/html');
   }
 
-  private sendErrorPage(res: ServerResponse, error: string, description?: string): void {
+  private sendErrorPage(h: any, error: string, description?: string): void {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -170,23 +164,7 @@ export class OAuthCallbackHandler {
       </html>
     `;
 
-    res.writeHead(400, { 'Content-Type': 'text/html' });
-    res.end(html);
-  }
-
-  private cleanup(): void {
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-      this.timeoutId = null;
-    }
-
-    if (this.server) {
-      this.server.close();
-      this.server = null;
-    }
-
-    this.resolvePromise = null;
-    this.rejectPromise = null;
+    h.response(html).type('text/html');
   }
 
   private async openBrowser(url: string): Promise<void> {
@@ -215,12 +193,19 @@ export class OAuthCallbackHandler {
         detached: true,
       });
 
-      child.on('error', reject);
+      child.on('error', error => {
+        Logger.warning(`Failed to open browser automatically: ${error.message}`);
+        Logger.info(`Please open this URL in your browser: ${url}`);
+        resolve(); // Don't reject, just log and continue
+      });
+
       child.on('close', code => {
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Failed to open browser (exit code: ${code})`));
+          Logger.warning(`Browser process exited with code ${code}`);
+          Logger.info(`Please open this URL in your browser: ${url}`);
+          resolve(); // Don't reject, just log and continue
         }
       });
 
@@ -228,10 +213,25 @@ export class OAuthCallbackHandler {
       child.unref();
     });
   }
+
+  private cleanup(): void {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+
+    if (this.server) {
+      this.server.stop();
+      this.server = null;
+    }
+
+    this.resolvePromise = null;
+    this.rejectPromise = null;
+  }
 }
 
 // Export a convenience function that matches the oauth-callback interface
 export async function getAuthCode(options: OAuthCallbackOptions): Promise<OAuthCallbackResult> {
-  const handler = new OAuthCallbackHandler();
+  const handler = new HapiOAuthHandler();
   return handler.getAuthCode(options);
 }

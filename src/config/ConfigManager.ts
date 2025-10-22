@@ -3,8 +3,8 @@ import fs from 'fs-extra';
 import { google } from 'googleapis';
 import path from 'path';
 import { ApiCredentials, Config } from '../types';
+import { getAuthCode } from '../utils/HapiOAuthHandler';
 import { Logger } from '../utils/Logger';
-import { getAuthCode } from '../utils/OAuthCallbackHandler';
 
 export class ConfigManager {
   private configPath: string;
