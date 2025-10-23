@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import fs from 'fs';
 import path from 'path';
 
 describe('CLI Commands Integration', () => {
@@ -50,11 +51,13 @@ describe('CLI Commands Integration', () => {
        * when implemented with done().
        */
       console.log('cwd:' + process.cwd());
-      const child = spawn(
-        'node',
-        [cliPath, 'list-albums', '--data-dir', './tests/integration/example'],
-        { stdio: 'pipe' }
-      );
+      const dataDir = path.resolve(__dirname, '../example');
+      console.log('data-dir path:', dataDir);
+      console.log('data-dir exists:', fs.existsSync(dataDir));
+
+      const child = spawn('node', [cliPath, 'list-albums', '--data-dir', dataDir], {
+        stdio: 'pipe',
+      });
 
       let output = '';
       let errorOutput = '';
@@ -76,6 +79,10 @@ describe('CLI Commands Integration', () => {
           }
         });
       });
+
+      console.log('Exit code:', exitCode);
+      console.log('Output:', output);
+      console.log('Error output:', errorOutput);
 
       expect(exitCode).toBe(0);
       expect(output).toContain('Flickr Albums:');
