@@ -17,7 +17,7 @@ export class HapiOAuthHandler {
   private server: Server | null = null;
   private resolvePromise: ((result: OAuthCallbackResult) => void) | null = null;
   private rejectPromise: ((error: Error) => void) | null = null;
-  private timeoutId: NodeJS.Timeout | null = null;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   async getAuthCode(options: OAuthCallbackOptions): Promise<OAuthCallbackResult> {
     const { authorizationUrl, port, timeout = 300000 } = options;
