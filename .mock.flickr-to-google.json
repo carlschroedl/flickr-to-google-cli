@@ -1,0 +1,11 @@
+{
+  "credentials": {
+    "google": {
+      "clientId": "mock-client-id.apps.googleusercontent.com",
+      "clientSecret": "GOCSPX-mock-client-secret"
+    }
+  },
+  "defaultBatchSize": 10,
+  "maxRetries": 3,
+  "retryDelay": 1000
+}
