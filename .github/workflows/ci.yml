@@ -36,7 +36,7 @@ jobs:
 
       - name: Run integration tests
         run: |
-          cp .mock.flickr-to-goggle.json .flickr-to-goggle.json
+          cp .mock.flickr-to-google.json .flickr-to-google.json
           npm run test:integration
 
       - name: Run all tests with coverage
