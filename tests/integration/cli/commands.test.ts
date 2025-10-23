@@ -49,6 +49,7 @@ describe('CLI Commands Integration', () => {
        * This test is implemented with the async/await pattern because the test hung indefinitely.
        * when implemented with done().
        */
+      console.log('cwd:' + process.cwd());
       const child = spawn(
         'node',
         [cliPath, 'list-albums', '--data-dir', './tests/integration/example'],
