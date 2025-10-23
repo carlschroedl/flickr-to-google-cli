@@ -52,8 +52,10 @@ describe('CLI Commands Integration', () => {
        */
       console.log('cwd:' + process.cwd());
       const dataDir = path.resolve(__dirname, '../example');
-      console.log('data-dir path:', dataDir);
-      console.log('data-dir exists:', fs.existsSync(dataDir));
+
+      // Force flush console output
+      process.stdout.write('DEBUG: Starting test with dataDir: ' + dataDir + '\n');
+      process.stderr.write('DEBUG: Data dir exists: ' + fs.existsSync(dataDir) + '\n');
 
       const child = spawn('node', [cliPath, 'list-albums', '--data-dir', dataDir], {
         stdio: 'pipe',
@@ -80,9 +82,22 @@ describe('CLI Commands Integration', () => {
         });
       });
 
-      console.log('Exit code:', exitCode);
-      console.log('Output:', output);
-      console.log('Error output:', errorOutput);
+      // Force flush debug output
+      process.stdout.write('DEBUG: Exit code: ' + exitCode + '\n');
+      process.stdout.write('DEBUG: Output: ' + output + '\n');
+      process.stderr.write('DEBUG: Error output: ' + errorOutput + '\n');
+
+      // Write debug info to file for CI
+      const debugInfo = {
+        cwd: process.cwd(),
+        dataDir,
+        dataDirExists: fs.existsSync(dataDir),
+        exitCode,
+        output,
+        errorOutput,
+        timestamp: new Date().toISOString(),
+      };
+      process.stdout.write('DEBUG: Debug info: ' + JSON.stringify(debugInfo, null, 2) + '\n');
 
       expect(exitCode).toBe(0);
       expect(output).toContain('Flickr Albums:');
