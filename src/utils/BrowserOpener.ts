@@ -10,7 +10,7 @@ export class BrowserOpener {
   static async openBrowser(url: string): Promise<void> {
     return new Promise(resolve => {
       const { command, args } = this.getCommandForPlatform(url);
-
+      Logger.info(`Opening browser with command: ${command} and args: ${args}`);
       const child = spawn(command, args, {
         stdio: 'ignore',
         detached: true,
@@ -36,7 +36,15 @@ export class BrowserOpener {
       child.unref();
     });
   }
-
+  private static escapeUrlForPlatform(url: string): string {
+    const platform = process.platform;
+    switch (platform) {
+      case 'win32':
+        return url.replace(/[&|^<>"]/g, '^$&');
+      default:
+        return url;
+    }
+  }
   /**
    * Gets the appropriate command and arguments for opening a URL on the current platform
    * @param url The URL to open
@@ -44,22 +52,22 @@ export class BrowserOpener {
    */
   static getCommandForPlatform(url: string): { command: string; args: string[] } {
     const platform = process.platform;
-
+    const escapedUrl = this.escapeUrlForPlatform(url);
     switch (platform) {
       case 'win32':
         return {
           command: 'cmd',
-          args: ['/c', 'start', '', url],
+          args: ['/c', 'start', '', escapedUrl],
         };
       case 'darwin':
         return {
           command: 'open',
-          args: [url],
+          args: [escapedUrl],
         };
       default: // linux and others
         return {
           command: 'xdg-open',
-          args: [url],
+          args: [escapedUrl],
         };
     }
   }

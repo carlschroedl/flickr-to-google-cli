@@ -17,6 +17,15 @@ jest.mock('child_process', () => ({
 }));
 
 describe('BrowserOpener', () => {
+  // eslint-disable-next-line @typescript-eslint/line-length
+  const complex_oauth_url =
+    'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary.appendonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary.readonly&prompt=consent&response_type=code&client_id=123456789.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth2callback';
+  // eslint-disable-next-line @typescript-eslint/line-length
+  const windows_escaped_complex_oauth_url =
+    'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline^&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary.appendonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary.readonly^&prompt=consent^&response_type=code^&client_id=123456789.apps.googleusercontent.com^&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth2callback';
+  // eslint-disable-next-line @typescript-eslint/line-length
+  const nix_escaped_complex_oauth_url =
+    'https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary.appendonly%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fphotoslibrary.readonly&prompt=consent&response_type=code&client_id=123456789.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Foauth2callback';
   let mockSpawn: jest.MockedFunction<any>;
   let originalPlatform: string;
 
@@ -193,6 +202,88 @@ describe('BrowserOpener', () => {
 
       expect(mockChildProcess.unref).toHaveBeenCalled();
     });
+
+    describe('URLs with special characters in openBrowser', () => {
+      it(`should escape complex OAuth URL on Windows`, async () => {
+        await withPlatform('win32', async () => {
+          const mockChildProcess = {
+            on: jest.fn(),
+            unref: jest.fn(),
+          };
+          mockSpawn.mockReturnValue(mockChildProcess);
+
+          mockChildProcess.on.mockImplementation(
+            (event: string, callback: (code: number) => void) => {
+              if (event === 'close') {
+                setTimeout(() => callback(0), 10);
+              }
+            }
+          );
+
+          await BrowserOpener.openBrowser(complex_oauth_url);
+          expect(mockSpawn).toHaveBeenCalledWith(
+            'cmd',
+            ['/c', 'start', '', windows_escaped_complex_oauth_url],
+            {
+              stdio: 'ignore',
+              detached: true,
+            }
+          );
+        });
+      });
+
+      it(`should escape complex OAuth URL on macOS`, async () => {
+        await withPlatform('darwin', async () => {
+          const mockChildProcess = {
+            on: jest.fn(),
+            unref: jest.fn(),
+          };
+          mockSpawn.mockReturnValue(mockChildProcess);
+
+          mockChildProcess.on.mockImplementation(
+            (event: string, callback: (code: number) => void) => {
+              if (event === 'close') {
+                setTimeout(() => callback(0), 10);
+              }
+            }
+          );
+
+          await BrowserOpener.openBrowser(complex_oauth_url);
+
+          // For URLs with spaces or quotes, expect proper quoting
+          expect(mockSpawn).toHaveBeenCalledWith('open', [nix_escaped_complex_oauth_url], {
+            stdio: 'ignore',
+            detached: true,
+          });
+        });
+      });
+
+      it(`should escape complex OAuth URL on Linux`, async () => {
+        await withPlatform('linux', async () => {
+          const mockChildProcess = {
+            on: jest.fn(),
+            unref: jest.fn(),
+          };
+          mockSpawn.mockReturnValue(mockChildProcess);
+
+          mockChildProcess.on.mockImplementation(
+            (event: string, callback: (code: number) => void) => {
+              if (event === 'close') {
+                setTimeout(() => callback(0), 10);
+              }
+            }
+          );
+
+          await BrowserOpener.openBrowser(complex_oauth_url);
+
+          // For URLs with spaces or quotes, expect proper quoting
+          expect(mockSpawn).toHaveBeenCalledWith('xdg-open', [nix_escaped_complex_oauth_url], {
+            stdio: 'ignore',
+            detached: true,
+          });
+        });
+      });
+    }); //end spec char
   });
 
   describe('getCommandForPlatform', () => {
@@ -236,6 +327,38 @@ describe('BrowserOpener', () => {
         expect(result).toEqual({
           command: 'xdg-open',
           args: ['https://example.com'],
+        });
+      });
+    });
+
+    describe('URLs with special characters', () => {
+      it(`should escape complex OAuth URL on Windows`, async () => {
+        await withPlatform('win32', async () => {
+          const result = BrowserOpener.getCommandForPlatform(complex_oauth_url);
+          expect(result).toEqual({
+            command: 'cmd',
+            args: ['/c', 'start', '', windows_escaped_complex_oauth_url],
+          });
+        });
+      });
+
+      it(`should escape complex OAuth URL on macOS`, async () => {
+        await withPlatform('darwin', async () => {
+          const result = BrowserOpener.getCommandForPlatform(complex_oauth_url);
+          expect(result).toEqual({
+            command: 'open',
+            args: [nix_escaped_complex_oauth_url],
+          });
+        });
+      });
+
+      it(`should escape complex OAuth URL on Linux`, async () => {
+        await withPlatform('linux', async () => {
+          const result = BrowserOpener.getCommandForPlatform(complex_oauth_url);
+          expect(result).toEqual({
+            command: 'xdg-open',
+            args: [nix_escaped_complex_oauth_url],
+          });
         });
       });
     });
