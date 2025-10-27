@@ -6,7 +6,6 @@
   "bin": {
     "flickr-to-google": "dist/index.js"
   },
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
@@ -49,8 +48,6 @@
     "ora": "^5.4.1"
   },
   "devDependencies": {
-    "@tsconfig/node-ts": "^23.6.1",
-    "@tsconfig/node20": "^20.1.6",
     "@types/fs-extra": "^11.0.4",
     "@types/handlebars": "^4.1.0",
     "@types/jest": "^29.5.8",
