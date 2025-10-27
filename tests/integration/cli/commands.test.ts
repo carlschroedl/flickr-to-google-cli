@@ -21,6 +21,7 @@ describe('CLI Commands Integration', () => {
         expect(output).toContain('list-albums');
         expect(output).toContain('transfer');
         expect(output).toContain('status');
+        child.unref();
         done();
       });
     });
@@ -38,6 +39,7 @@ describe('CLI Commands Integration', () => {
       child.on('close', code => {
         expect(code).toBe(0);
         expect(output.trim()).toBe('1.0.0');
+        child.unref();
         done();
       });
     });
@@ -69,6 +71,7 @@ describe('CLI Commands Integration', () => {
 
       const exitCode = await new Promise<number>(resolve => {
         child.on('close', code => {
+          child.unref();
           if (code == null) {
             fail('The child process did not close with an exit code');
           } else {
@@ -94,6 +97,7 @@ describe('CLI Commands Integration', () => {
         expect(code).toBe(0);
         expect(output).toContain('List all Flickr albums');
         expect(output).toContain('--data-dir');
+        child.unref();
         done();
       });
     });
@@ -116,6 +120,7 @@ describe('CLI Commands Integration', () => {
         expect(output).toContain('--data-dir');
         expect(output).toContain('--dry-run');
         expect(output).toContain('--batch-size');
+        child.unref();
         done();
       });
     });
@@ -135,6 +140,7 @@ describe('CLI Commands Integration', () => {
         expect(output).toContain('Check the status of a previous transfer');
         expect(output).toContain('Options:');
         expect(output).toContain('--job-id');
+        child.unref();
         done();
       });
     });
@@ -152,6 +158,7 @@ describe('CLI Commands Integration', () => {
       child.on('close', code => {
         expect(code).toBe(1);
         expect(errorOutput).toContain('unknown command');
+        child.unref();
         done();
       });
     });
@@ -167,6 +174,7 @@ describe('CLI Commands Integration', () => {
       child.on('close', code => {
         expect(code).toBe(1);
         expect(errorOutput).toContain('unknown option');
+        child.unref();
         done();
       });
     });
