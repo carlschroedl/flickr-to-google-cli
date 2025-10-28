@@ -163,12 +163,30 @@ describe('GooglePhotosService', () => {
           },
         });
 
-      const result = await googlePhotosService.uploadPhoto(mockPhotoBuffer, 'test.jpg');
+      const result = await googlePhotosService.uploadPhoto(
+        mockPhotoBuffer,
+        'test.jpg',
+        'test description'
+      );
 
       expect(result).toBe('photo-id');
       expect(mockAuth.request).toHaveBeenCalledTimes(2);
+      expect(mockAuth.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          data: {
+            newMediaItems: [
+              {
+                description: 'test description',
+                simpleMediaItem: {
+                  uploadToken: 'upload-token',
+                },
+              },
+            ],
+          },
+        })
+      );
     });
-
     it('should throw error when upload fails', async () => {
       const mockPhotoBuffer = Buffer.from('test image data');
       const mockAuth = (googlePhotosService as any).auth;

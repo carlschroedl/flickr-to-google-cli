@@ -111,7 +111,7 @@ export class GooglePhotosService {
     }
   }
 
-  async uploadPhoto(photoBuffer: Buffer, filename: string): Promise<string> {
+  async uploadPhoto(photoBuffer: Buffer, filename: string, description?: string): Promise<string> {
     await this.ensureAuthenticated();
 
     try {
@@ -130,16 +130,19 @@ export class GooglePhotosService {
 
       const uploadToken = uploadResponse.data;
 
+      const newMediaItem: any = {
+        simpleMediaItem: {
+          uploadToken,
+        },
+      };
+
+      if (description) {
+        newMediaItem.description = description;
+      }
+
       // Then, create the media item
       const createResponse = await this.makeRequest('POST', '/mediaItems:batchCreate', {
-        newMediaItems: [
-          {
-            description: filename,
-            simpleMediaItem: {
-              uploadToken,
-            },
-          },
-        ],
+        newMediaItems: [newMediaItem],
       });
 
       return createResponse.newMediaItemResults[0].mediaItem.id;
