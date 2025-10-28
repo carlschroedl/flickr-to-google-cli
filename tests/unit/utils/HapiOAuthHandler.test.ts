@@ -161,8 +161,9 @@ describe('HapiOAuthHandler', () => {
 
       expect(handler['timeoutId']).toBeNull();
       expect(handler['server']).toBeNull();
-      expect(handler['resolvePromise']).toBeNull();
-      expect(handler['rejectPromise']).toBeNull();
+      // Promise callbacks are not nullified - they remain available for resolution
+      expect(handler['resolvePromise']).toBeDefined();
+      expect(handler['rejectPromise']).toBeDefined();
     });
   });
 });

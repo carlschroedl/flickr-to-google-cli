@@ -193,9 +193,6 @@ export class HapiOAuthHandler {
       this.server.stop();
       this.server = null;
     }
-
-    this.resolvePromise = null;
-    this.rejectPromise = null;
   }
 }
 
