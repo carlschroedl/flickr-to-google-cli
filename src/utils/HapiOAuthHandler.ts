@@ -13,6 +13,11 @@ export interface OAuthCallbackResult {
   code: string;
 }
 
+interface ResponseInfo {
+  body: string;
+  statusCode: number;
+}
+
 export class HapiOAuthHandler {
   private server: Server | null = null;
   private resolvePromise: ((result: OAuthCallbackResult) => void) | null = null;
@@ -60,27 +65,26 @@ export class HapiOAuthHandler {
         path: '/oauth2callback',
         handler: (request, h) => {
           const { code, error, error_description } = request.query;
-
+          let responseInfo: ResponseInfo;
           if (error) {
-            this.sendErrorPage(h, error, error_description);
+            responseInfo = this.makeErrorPage(error, error_description);
             this.cleanup();
             this.rejectPromise?.(
               new Error(`OAuth error: ${error} - ${error_description || 'Unknown error'}`)
             );
-            return h.response().code(400);
-          }
-
-          if (code) {
-            this.sendSuccessPage(h);
+          } else if (code) {
+            responseInfo = this.makeSuccessPage();
             this.cleanup();
             this.resolvePromise?.({ code });
-            return h.response().code(200);
+          } else {
+            responseInfo = this.makeErrorPage(
+              'missing_code',
+              'Authorization code not found in callback URL'
+            );
+            this.cleanup();
+            this.rejectPromise?.(new Error('Authorization code not found in callback URL'));
           }
-
-          this.sendErrorPage(h, 'missing_code', 'Authorization code not found in callback URL');
-          this.cleanup();
-          this.rejectPromise?.(new Error('Authorization code not found in callback URL'));
-          return h.response().code(400);
+          return h.response(responseInfo.body).code(responseInfo.statusCode).type('text/html');
         },
       });
 
@@ -94,7 +98,7 @@ export class HapiOAuthHandler {
     }
   }
 
-  private sendSuccessPage(h: any): void {
+  private makeSuccessPage(): ResponseInfo {
     const html = `
       <!DOCTYPE html>
       <html>
@@ -125,10 +129,13 @@ export class HapiOAuthHandler {
       </html>
     `;
 
-    h.response(html).type('text/html');
+    return {
+      body: html,
+      statusCode: 200,
+    };
   }
 
-  private sendErrorPage(h: any, error: string, description?: string): void {
+  private makeErrorPage(error: string, description?: string): ResponseInfo {
     const template = Handlebars.compile(`
       <!DOCTYPE html>
       <html>
@@ -170,7 +177,10 @@ export class HapiOAuthHandler {
       description: description,
     });
 
-    h.response(html).type('text/html');
+    return {
+      body: html,
+      statusCode: 400,
+    };
   }
 
   private cleanup(): void {

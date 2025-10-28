@@ -72,116 +72,78 @@ describe('HapiOAuthHandler', () => {
     });
   });
 
-  describe('sendSuccessPage', () => {
+  describe('makeSuccessPage', () => {
     it('should send success page HTML', async () => {
-      const mockH = {
-        response: jest.fn().mockReturnThis(),
-        type: jest.fn().mockReturnThis(),
-      };
+      const responseInfo = handler['makeSuccessPage']();
 
-      handler['sendSuccessPage'](mockH);
-
-      expect(mockH.response).toHaveBeenCalledWith(
-        expect.stringContaining('Authentication Successful')
-      );
-      expect(mockH.type).toHaveBeenCalledWith('text/html');
+      expect(responseInfo.body).toContain('Authentication Successful');
+      expect(responseInfo.statusCode).toBe(200);
     });
   });
 
-  describe('sendErrorPage', () => {
+  describe('makeErrorPage', () => {
     it('should send error page HTML with description', async () => {
-      const mockH = {
-        response: jest.fn().mockReturnThis(),
-        type: jest.fn().mockReturnThis(),
-      };
+      const responseInfo = handler['makeErrorPage']('test_error', 'Test error description');
 
-      handler['sendErrorPage'](mockH, 'test_error', 'Test error description');
-
-      expect(mockH.response).toHaveBeenCalledWith(expect.stringContaining('Authentication Failed'));
-      expect(mockH.response).toHaveBeenCalledWith(expect.stringContaining('test_error'));
-      expect(mockH.response).toHaveBeenCalledWith(
-        expect.stringContaining('Test error description')
-      );
-      expect(mockH.type).toHaveBeenCalledWith('text/html');
+      expect(responseInfo.body).toContain('Authentication Failed');
+      expect(responseInfo.body).toContain('test_error');
+      expect(responseInfo.body).toContain('Test error description');
+      expect(responseInfo.statusCode).toBe(400);
     });
 
     it('should send error page HTML without description', async () => {
-      const mockH = {
-        response: jest.fn().mockReturnThis(),
-        type: jest.fn().mockReturnThis(),
-      };
+      const responseInfo = handler['makeErrorPage']('test_error');
 
-      handler['sendErrorPage'](mockH, 'test_error');
-
-      expect(mockH.response).toHaveBeenCalledWith(expect.stringContaining('test_error'));
-      expect(mockH.type).toHaveBeenCalledWith('text/html');
+      expect(responseInfo.body).toContain('test_error');
+      expect(responseInfo.statusCode).toBe(400);
     });
 
     it('should prevent XSS attacks by escaping HTML in error parameter', async () => {
-      const mockH = {
-        response: jest.fn().mockReturnThis(),
-        type: jest.fn().mockReturnThis(),
-      };
-
       const maliciousError = '<script>alert("XSS")</script>';
-      handler['sendErrorPage'](mockH, maliciousError);
-
-      const htmlResponse = mockH.response.mock.calls[0][0];
+      const responseInfo = handler['makeErrorPage'](maliciousError);
 
       // Should NOT contain the raw script tag
-      expect(htmlResponse).not.toContain('<script>alert("XSS")</script>');
+      expect(responseInfo.body).not.toContain(maliciousError);
 
       // Should contain escaped version
-      expect(htmlResponse).toContain('&lt;script&gt;');
-      expect(htmlResponse).toContain('&lt;/script&gt;');
+      expect(responseInfo.body).toContain('&lt;script&gt;');
+      expect(responseInfo.body).toContain('XSS');
+      expect(responseInfo.body).toContain('&lt;/script&gt;');
+      expect(responseInfo.statusCode).toBe(400);
     });
 
     it('should prevent XSS attacks by escaping HTML in description parameter', async () => {
-      const mockH = {
-        response: jest.fn().mockReturnThis(),
-        type: jest.fn().mockReturnThis(),
-      };
-
       const maliciousDescription = '<img src=x onerror=alert("XSS2")>';
-      handler['sendErrorPage'](mockH, 'access_denied', maliciousDescription);
-
-      const htmlResponse = mockH.response.mock.calls[0][0];
-
+      const responseInfo = handler['makeErrorPage']('test_error', maliciousDescription);
       // Should NOT contain the raw img tag
-      expect(htmlResponse).not.toContain('<img src=x onerror=alert("XSS2")>');
+      expect(responseInfo.body).not.toContain(maliciousDescription);
 
       // Should contain escaped version
-      expect(htmlResponse).toContain('&lt;img');
-      expect(htmlResponse).toContain('&gt;');
+      expect(responseInfo.body).toContain('&lt;img');
+      expect(responseInfo.body).toContain('XSS2');
+      expect(responseInfo.body).toContain('&gt;');
+      expect(responseInfo.statusCode).toBe(400);
     });
 
     it('should escape multiple XSS attack vectors', async () => {
-      const mockH = {
-        response: jest.fn().mockReturnThis(),
-        type: jest.fn().mockReturnThis(),
-      };
-
       const maliciousError = '"><script>alert(1)</script><div class="';
       const maliciousDescription = 'test" onload="alert(3)';
-      handler['sendErrorPage'](mockH, maliciousError, maliciousDescription);
+      const responseInfo = handler['makeErrorPage'](maliciousError, maliciousDescription);
 
-      const htmlResponse = mockH.response.mock.calls[0][0];
-
-      // Should NOT contain any unescaped dangerous characters
-      expect(htmlResponse).not.toContain('"><script>');
-      expect(htmlResponse).not.toContain('" onload="alert');
-      expect(htmlResponse).not.toContain('</script><div');
+      expect(responseInfo.body).not.toContain(maliciousError);
+      expect(responseInfo.body).not.toContain(maliciousDescription);
 
       // Should contain escaped versions
-      expect(htmlResponse).toContain('&quot;');
-      expect(htmlResponse).toContain('&lt;');
-      expect(htmlResponse).toContain('&gt;');
+      expect(responseInfo.body).toContain('&quot;');
+      expect(responseInfo.body).toContain('&lt;');
+      expect(responseInfo.body).toContain('&gt;');
 
       // Verify the actual escaped content (Handlebars uses different escaping)
-      expect(htmlResponse).toContain(
+      expect(responseInfo.body).toContain(
         '&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;&lt;div class&#x3D;&quot;'
       );
-      expect(htmlResponse).toContain('test&quot; onload&#x3D;&quot;alert(3)');
+      expect(responseInfo.body).toContain('test&quot; onload&#x3D;&quot;alert(3)');
+      expect(responseInfo.statusCode).toBe(400);
     });
   });
 
