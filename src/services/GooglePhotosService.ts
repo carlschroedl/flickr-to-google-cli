@@ -1,9 +1,10 @@
+import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { ApiCredentials, GoogleAlbum } from '../types';
 import { Logger } from '../utils/Logger';
 
 export class GooglePhotosService {
-  private auth: any;
+  private auth: OAuth2Client;
   private baseUrl = 'https://photoslibrary.googleapis.com/v1';
 
   constructor(credentials: ApiCredentials['google']) {
@@ -191,6 +192,10 @@ export class GooglePhotosService {
 
   async getAccessToken(): Promise<string> {
     await this.ensureAuthenticated();
-    return this.auth.credentials.access_token;
+    if (!this.auth.credentials.access_token) {
+      throw new Error('No access token found');
+    } else {
+      return this.auth.credentials.access_token;
+    }
   }
 }
