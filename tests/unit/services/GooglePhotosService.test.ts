@@ -45,7 +45,6 @@ describe('GooglePhotosService', () => {
       const mockAlbum = {
         id: 'album-id',
         title: 'Test Album',
-        description: 'Test Description',
         mediaItemsCount: 0,
         isWriteable: true,
       };
@@ -55,12 +54,11 @@ describe('GooglePhotosService', () => {
         data: mockAlbum,
       });
 
-      const result = await googlePhotosService.createAlbum('Test Album', 'Test Description');
+      const result = await googlePhotosService.createAlbum('Test Album');
 
       expect(result).toEqual({
         id: 'album-id',
         title: 'Test Album',
-        description: 'Test Description',
         mediaItemsCount: 0,
         coverPhotoBaseUrl: undefined,
         isWriteable: true,
@@ -94,14 +92,12 @@ describe('GooglePhotosService', () => {
         {
           id: 'album-1',
           title: 'Album 1',
-          description: 'Description 1',
           mediaItemsCount: 5,
           isWriteable: true,
         },
         {
           id: 'album-2',
           title: 'Album 2',
-          description: 'Description 2',
           mediaItemsCount: 3,
           isWriteable: false,
         },
@@ -118,7 +114,6 @@ describe('GooglePhotosService', () => {
         {
           id: 'album-1',
           title: 'Album 1',
-          description: 'Description 1',
           mediaItemsCount: 5,
           coverPhotoBaseUrl: undefined,
           isWriteable: true,
@@ -126,7 +121,6 @@ describe('GooglePhotosService', () => {
         {
           id: 'album-2',
           title: 'Album 2',
-          description: 'Description 2',
           mediaItemsCount: 3,
           coverPhotoBaseUrl: undefined,
           isWriteable: false,
@@ -208,26 +202,6 @@ describe('GooglePhotosService', () => {
   });
 
   describe('updatePhotoMetadata', () => {
-    it('should update photo description', async () => {
-      const mockAuth = (googlePhotosService as any).auth;
-      mockAuth.request.mockResolvedValue({ data: {} });
-
-      await googlePhotosService.updatePhotoMetadata('photo-id', 'New description');
-
-      expect(mockAuth.request).toHaveBeenCalledWith({
-        method: 'PATCH',
-        url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
-        headers: {
-          Authorization: 'Bearer test-access-token',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          id: 'photo-id',
-          description: 'New description',
-        },
-      });
-    });
-
     it('should update photo location', async () => {
       const mockAuth = (googlePhotosService as any).auth;
       mockAuth.request.mockResolvedValue({ data: {} });

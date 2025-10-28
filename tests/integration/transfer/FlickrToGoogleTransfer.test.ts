@@ -161,7 +161,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
       mockGooglePhotosService.createAlbum.mockResolvedValue({
         id: 'google-album-id',
         title: 'Test Album',
-        description: 'Test Description',
         mediaItemsCount: 0,
         isWriteable: true,
       });
@@ -179,10 +178,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
       await transfer.transferAlbums(options);
 
       expect(mockFlickrService.getAlbumDetails).toHaveBeenCalledWith('album1');
-      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalledWith(
-        'Test Album',
-        'Test Description'
-      );
+      expect(mockGooglePhotosService.createAlbum).toHaveBeenCalledWith('Test Album');
       expect(mockFlickrService.getPhoto).toHaveBeenCalledTimes(2);
       expect(mockGooglePhotosService.uploadPhoto).toHaveBeenCalledTimes(2);
       expect(mockGooglePhotosService.addPhotosToAlbum).toHaveBeenCalledWith('google-album-id', [
@@ -196,7 +192,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
       mockGooglePhotosService.createAlbum.mockResolvedValue({
         id: 'google-album-id',
         title: 'Test Album',
-        description: 'Test Description',
         mediaItemsCount: 0,
         isWriteable: true,
       });
@@ -229,7 +224,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
       mockGooglePhotosService.createAlbum.mockResolvedValue({
         id: 'google-album-id',
         title: 'Test Album',
-        description: 'Test Description',
         mediaItemsCount: 0,
         isWriteable: true,
       });
@@ -256,7 +250,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
       mockGooglePhotosService.createAlbum.mockResolvedValue({
         id: 'google-album-id',
         title: 'Test Album',
-        description: 'Test Description',
         mediaItemsCount: 0,
         isWriteable: true,
       });
