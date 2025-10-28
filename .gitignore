@@ -1,6 +1,7 @@
 # Secrets
 /.flickr-to-google.json
 /.real.flickr-to-google.json
+/.test.flickr-to-google.json
 /cert.pem
 /key.pem
 
