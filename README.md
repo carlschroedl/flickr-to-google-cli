@@ -15,14 +15,11 @@ A command-line tool for transferring photo albums from Flickr to Google Photos w
 
 ## Prerequisites
 
-Before using this tool, you'll need to set up API access for both Flickr and Google Photos:
+Before using this tool, you'll need export your Flickr data and set up API access for Google Photos:
 
-### Flickr API Setup
+### Flickr Setup
 
-1. Go to [Flickr API](https://www.flickr.com/services/api/)
-2. Create a new application
-3. Note down your API Key and API Secret
-4. Optionally, find your Flickr User ID (found in your profile URL)
+1. [Download all your Flickr content as one or more zip files](https://www.flickrhelp.com/hc/en-us/articles/4404079675156-Downloading-content-from-Flickr#h_01K2YYSY0GQ4T8PXC8B47HQ97T)
 
 ### Google Photos API Setup
 
@@ -36,22 +33,26 @@ Before using this tool, you'll need to set up API access for both Flickr and Goo
 ## Installation
 
 1. Clone this repository:
+
 ```bash
 git clone <repository-url>
 cd flickr-to-google-cli
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Build the project:
+
 ```bash
 npm run build
 ```
 
 4. Make the CLI globally available (optional):
+
 ```bash
 npm link
 ```
@@ -65,9 +66,7 @@ npm run dev setup
 ```
 
 This will prompt you for:
-- Flickr API Key
-- Flickr API Secret
-- Flickr User ID (optional)
+
 - Google OAuth Client ID
 - Google OAuth Client Secret
 
@@ -142,12 +141,11 @@ npm run dev status --job-id <job-id>
 
 ## How It Works
 
-1. **Authentication**: The tool uses your API credentials to authenticate with both Flickr and Google Photos
-2. **Album Discovery**: Fetches your Flickr albums and their metadata
-3. **Photo Processing**: Downloads photos from Flickr in batches
-4. **Upload to Google Photos**: Uploads photos to Google Photos with preserved metadata
-5. **Album Creation**: Creates corresponding albums in Google Photos
-6. **Progress Tracking**: Monitors transfer progress and saves job status
+1. **Authentication**: The tool uses your API credentials to authenticate Google Photos
+2. **Album Discovery**: Reads your Flickr albums and their metadata
+3. **Upload to Google Photos**: Uploads photos to Google Photos with preserved metadata
+4. **Album Creation**: Creates corresponding albums in Google Photos
+5. **Progress Tracking**: Monitors transfer progress and saves job status
 
 ## Metadata Preservation
 
@@ -156,8 +154,13 @@ The tool preserves the following metadata during transfer:
 - Photo titles and descriptions
 - GPS location information (latitude/longitude)
 - Photo dimensions and technical details
-- Album titles and descriptions
+- Album titles
 - Creation and upload dates
+
+## Limitations
+
+Flickr supports album descriptions, but Google does not. Therefore this tool cannot transfer your
+Flickr album descriptions.
 
 ## Error Handling
 
@@ -278,6 +281,7 @@ The project includes comprehensive automated testing:
 - **Mocking**: Proper mocking of external dependencies
 
 Test Structure:
+
 ```
 tests/
 ├── unit/                    # Unit tests
@@ -291,6 +295,7 @@ tests/
 ```
 
 Before submitting a pull request, make sure to run:
+
 ```bash
 npm run check
 ```

@@ -71,19 +71,17 @@ export class GooglePhotosService {
     }
   }
 
-  async createAlbum(title: string, description?: string): Promise<GoogleAlbum> {
+  async createAlbum(title: string): Promise<GoogleAlbum> {
     try {
       const response = await this.makeRequest('POST', '/albums', {
         album: {
           title,
-          description,
         },
       });
 
       return {
         id: response.id!,
         title: response.title!,
-        description: response.description,
         mediaItemsCount: response.mediaItemsCount || 0,
         coverPhotoBaseUrl: response.coverPhotoBaseUrl,
         isWriteable: response.isWriteable || false,

@@ -107,8 +107,14 @@ export class FlickrToGoogleTransfer {
     try {
       // Create Google Photos album
       let googleAlbum: GoogleAlbum | null = null;
+      // Warn if album has description since Google Photos doesn't support album descriptions
+      if (album.description && album.description.trim()) {
+        Logger.warning(
+          `Album "${album.title}" (ID: ${album.id}) has a description, but Google Photos doesn't support album descriptions. The following description will not be transferred. "${album.description}"`
+        );
+      }
       if (!options.dryRun) {
-        googleAlbum = await this.googlePhotosService.createAlbum(album.title, album.description);
+        googleAlbum = await this.googlePhotosService.createAlbum(album.title);
 
         Logger.success(`Created Google Photos album: ${googleAlbum.title}`);
       } else {

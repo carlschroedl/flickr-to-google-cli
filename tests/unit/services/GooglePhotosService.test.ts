@@ -75,7 +75,6 @@ describe('GooglePhotosService', () => {
         data: {
           album: {
             title: 'Test Album',
-            description: 'Test Description',
           },
         },
       });
