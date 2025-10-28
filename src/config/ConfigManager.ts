@@ -96,6 +96,7 @@ export class ConfigManager {
           'https://www.googleapis.com/auth/photoslibrary',
           'https://www.googleapis.com/auth/photoslibrary.appendonly',
           'https://www.googleapis.com/auth/photoslibrary.readonly',
+          'https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata',
         ],
         prompt: 'consent', // Force consent to get refresh token
       });
