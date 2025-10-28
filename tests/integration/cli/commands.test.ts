@@ -98,7 +98,7 @@ describe('CLI Commands Integration', () => {
     });
 
     it('should handle invalid options gracefully', async () => {
-      const result = await cli(['list-albums', '--invalid-option']);
+      const result = await cli(['--invalid-option']);
 
       expect(result.code).toBe(1);
       expect(result.stderr).toContain('unknown option');
