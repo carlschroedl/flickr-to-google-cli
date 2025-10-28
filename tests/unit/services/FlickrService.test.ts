@@ -35,7 +35,7 @@ describe('FlickrService', () => {
             photo_count: '2',
             created: '1234567890',
             last_updated: '1234567890',
-            photos: ['photo1', 'photo2'],
+            photos: ['0', 'photo1', 'photo2'],
           },
         ],
       };
@@ -88,7 +88,11 @@ describe('FlickrService', () => {
             photo_count: '1',
             created: '1234567890',
             last_updated: '1234567890',
-            photos: ['photo1'],
+            photos: ['0', 'photo1'],
+            /*
+            above we simulate Flickr's strange behavior of arbitrarily including a nonexistent
+            photo with id = 0 in some albums. Our test should ensure that we filter out this photo.
+            */
           },
         ],
       };

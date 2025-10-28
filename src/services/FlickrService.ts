@@ -53,7 +53,8 @@ export class FlickrService {
       if (!albumData) {
         throw new Error(`Album ${albumId} not found`);
       }
-
+      // Flickr randomly adds a photo with id 0 to the album, we need to filter it out
+      albumData.photos = albumData.photos.filter((photoId: string) => photoId !== '0');
       // Get photos in the album
       const photos: FlickrPhoto[] = [];
       for (const photoId of albumData.photos) {
