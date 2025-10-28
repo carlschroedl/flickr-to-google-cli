@@ -165,8 +165,9 @@ export class GooglePhotosService {
 
   async updatePhotoMetadata(
     photoId: string,
-    description?: string,
-    location?: { latitude: number; longitude: number }
+    description?: string | null,
+    location?: { latitude: number; longitude: number },
+    dateCreated?: string
   ): Promise<void> {
     try {
       const updateBody: any = {
@@ -185,7 +186,9 @@ export class GooglePhotosService {
           },
         };
       }
-
+      if (dateCreated) {
+        updateBody.creationTime = dateCreated;
+      }
       await this.makeRequest('PATCH', `/mediaItems/${photoId}`, updateBody);
     } catch (error) {
       Logger.error('Failed to update photo metadata:', error);

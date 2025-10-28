@@ -23,7 +23,22 @@ describe('FlickrService', () => {
       expect(flickrService).toBeInstanceOf(FlickrService);
     });
   });
-
+  describe('cleanPhotoDescription', () => {
+    it('should return null if description is ".\\n"', () => {
+      expect(flickrService.cleanPhotoDescription('.\\n')).toBeUndefined();
+    });
+    it('should return null if description is empty', () => {
+      expect(flickrService.cleanPhotoDescription('')).toBeUndefined();
+    });
+    it('should return null if description is whitespace only', () => {
+      expect(flickrService.cleanPhotoDescription(' ')).toBeUndefined();
+      expect(flickrService.cleanPhotoDescription('\t')).toBeUndefined();
+      expect(flickrService.cleanPhotoDescription('\n')).toBeUndefined();
+    });
+    it('should return the description if it is not ".\\n" or empty', () => {
+      expect(flickrService.cleanPhotoDescription('Description')).toBe('Description');
+    });
+  });
   describe('getAlbums', () => {
     it('should read albums from local metadata file', async () => {
       const mockAlbumsData = {

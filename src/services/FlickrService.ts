@@ -80,7 +80,16 @@ export class FlickrService {
       throw error;
     }
   }
-
+  cleanPhotoDescription(description: string): string | undefined {
+    const trimmedDescription = description.trim();
+    if ('.\\n' === trimmedDescription) {
+      return undefined;
+    } else if ('' === trimmedDescription) {
+      return undefined;
+    } else {
+      return trimmedDescription;
+    }
+  }
   /**
    * Get detailed information about a specific photo from bulk export
    */
@@ -113,7 +122,7 @@ export class FlickrService {
       return {
         id: photoData.id,
         title: photoData.name,
-        description: photoData.description,
+        description: this.cleanPhotoDescription(photoData.description),
         url: photoFile ? join(this.dataDirectory, 'data', photoFile) : photoData.original,
         dateTaken: photoData.date_taken,
         dateUpload: photoData.date_imported,

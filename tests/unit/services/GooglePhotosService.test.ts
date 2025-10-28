@@ -247,6 +247,27 @@ describe('GooglePhotosService', () => {
         },
       });
     });
+    it('should update photo creation time', async () => {
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({ data: {} });
+
+      await googlePhotosService.updatePhotoMetadata(
+        'photo-id',
+        undefined,
+        undefined,
+        '2021-01-01 00:00:00'
+      );
+
+      expect(mockAuth.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
+          data: {
+            id: 'photo-id',
+            creationTime: '2021-01-01 00:00:00',
+          },
+        })
+      );
+    });
   });
 
   describe('getAccessToken', () => {

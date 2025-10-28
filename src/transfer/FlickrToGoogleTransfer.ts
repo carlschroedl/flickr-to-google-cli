@@ -192,7 +192,7 @@ export class FlickrToGoogleTransfer {
           );
 
           // Update metadata
-          if (photo.description || (photo.latitude && photo.longitude)) {
+          if ((photo.latitude && photo.longitude) || photo.dateTaken) {
             await this.googlePhotosService.updatePhotoMetadata(
               googlePhotoId,
               photo.description,
@@ -201,7 +201,8 @@ export class FlickrToGoogleTransfer {
                     latitude: photo.latitude,
                     longitude: photo.longitude,
                   }
-                : undefined
+                : undefined,
+              photo.dateTaken || undefined
             );
           }
 
