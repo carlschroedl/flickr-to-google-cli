@@ -263,7 +263,9 @@ describe('GooglePhotosService', () => {
           url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
           data: {
             id: 'photo-id',
-            creationTime: '2021-01-01 00:00:00',
+            mediaMetadata: {
+              creationTime: '2021-01-01 00:00:00',
+            },
           },
         })
       );

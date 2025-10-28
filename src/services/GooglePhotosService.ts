@@ -187,7 +187,9 @@ export class GooglePhotosService {
         };
       }
       if (dateCreated) {
-        updateBody.creationTime = dateCreated;
+        updateBody.mediaMetadata = {
+          creationTime: dateCreated,
+        };
       }
       await this.makeRequest('PATCH', `/mediaItems/${photoId}`, updateBody);
     } catch (error) {
