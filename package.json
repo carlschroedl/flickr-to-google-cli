@@ -16,11 +16,11 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:unit": "jest --testPathPattern=unit",
-    "test:integration": "jest --testPathPattern=integration",
+    "test": "node jest-wrapper",
+    "test:watch": "node jest-wrapper --watch",
+    "test:coverage": "node jest-wrapper --coverage",
+    "test:unit": "node jest-wrapper --testPathPattern=unit",
+    "test:integration": "node jest-wrapper --testPathPattern=integration",
     "check": "npm run lint && npm run format:check && npm run build && npm run test"
   },
   "keywords": [
