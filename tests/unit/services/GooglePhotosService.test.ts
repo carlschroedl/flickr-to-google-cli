@@ -219,59 +219,6 @@ describe('GooglePhotosService', () => {
     });
   });
 
-  describe('updatePhotoMetadata', () => {
-    it('should update photo location', async () => {
-      const mockAuth = (googlePhotosService as any).auth;
-      mockAuth.request.mockResolvedValue({ data: {} });
-
-      await googlePhotosService.updatePhotoMetadata('photo-id', undefined, {
-        latitude: 40.7128,
-        longitude: -74.006,
-      });
-
-      expect(mockAuth.request).toHaveBeenCalledWith({
-        method: 'PATCH',
-        url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
-        headers: {
-          Authorization: 'Bearer test-access-token',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          id: 'photo-id',
-          location: {
-            latlng: {
-              latitude: 40.7128,
-              longitude: -74.006,
-            },
-          },
-        },
-      });
-    });
-    it('should update photo creation time', async () => {
-      const mockAuth = (googlePhotosService as any).auth;
-      mockAuth.request.mockResolvedValue({ data: {} });
-
-      await googlePhotosService.updatePhotoMetadata(
-        'photo-id',
-        undefined,
-        undefined,
-        '2021-01-01 00:00:00'
-      );
-
-      expect(mockAuth.request).toHaveBeenCalledWith(
-        expect.objectContaining({
-          url: 'https://photoslibrary.googleapis.com/v1/mediaItems/photo-id',
-          data: {
-            id: 'photo-id',
-            mediaMetadata: {
-              creationTime: '2021-01-01T00:00:00.000Z',
-            },
-          },
-        })
-      );
-    });
-  });
-
   describe('getAccessToken', () => {
     it('should return access token', async () => {
       const result = await googlePhotosService.getAccessToken();

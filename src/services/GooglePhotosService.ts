@@ -163,42 +163,6 @@ export class GooglePhotosService {
     }
   }
 
-  async updatePhotoMetadata(
-    photoId: string,
-    description?: string | null,
-    location?: { latitude: number; longitude: number },
-    dateCreated?: string
-  ): Promise<void> {
-    try {
-      const updateBody: any = {
-        id: photoId,
-      };
-
-      if (description) {
-        updateBody.description = description;
-      }
-
-      if (location) {
-        updateBody.location = {
-          latlng: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-          },
-        };
-      }
-      if (dateCreated) {
-        const isoDate = new Date(dateCreated).toISOString();
-        updateBody.mediaMetadata = {
-          creationTime: isoDate,
-        };
-      }
-      await this.makeRequest('PATCH', `/mediaItems/${photoId}`, updateBody);
-    } catch (error) {
-      Logger.error('Failed to update photo metadata:', error);
-      throw error;
-    }
-  }
-
   async getAccessToken(): Promise<string> {
     await this.ensureAuthenticated();
     if (!this.auth.credentials.access_token) {

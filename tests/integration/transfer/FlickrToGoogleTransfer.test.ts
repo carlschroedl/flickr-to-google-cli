@@ -167,7 +167,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
       mockFlickrService.getPhoto.mockResolvedValue(Buffer.from('mock image data'));
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
       mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
-      mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
 
       const options: TransferOptions = {
         albumId: 'album1',
@@ -230,7 +229,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
       mockFlickrService.getPhoto.mockResolvedValue(Buffer.from('mock image data'));
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
       mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
-      mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
 
       const options: TransferOptions = {
         albumId: 'album1',
@@ -261,7 +259,6 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       mockGooglePhotosService.uploadPhoto.mockResolvedValue('google-photo-id');
       mockGooglePhotosService.addPhotosToAlbum.mockResolvedValue(undefined);
-      mockGooglePhotosService.updatePhotoMetadata.mockResolvedValue(undefined);
 
       const options: TransferOptions = {
         albumId: 'album1',
