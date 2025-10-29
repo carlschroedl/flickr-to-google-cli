@@ -38,6 +38,33 @@ describe('FlickrService', () => {
       expect(flickrService.cleanPhotoDescription('Description')).toBe('Description');
     });
   });
+
+  describe('cleanPhotoName', () => {
+    it('should return undefined for DSCN names', () => {
+      expect(flickrService.cleanPhotoName('DSCN1234')).toBeUndefined();
+      expect(flickrService.cleanPhotoName('DSCN0001')).toBeUndefined();
+    });
+    it('should return undefined for IMG names', () => {
+      expect(flickrService.cleanPhotoName('IMG_1234')).toBeUndefined();
+      expect(flickrService.cleanPhotoName('IMG0001')).toBeUndefined();
+    });
+    it('should return undefined for dot names', () => {
+      expect(flickrService.cleanPhotoName('.')).toBeUndefined();
+    });
+    it('should return undefined for date names', () => {
+      expect(flickrService.cleanPhotoName('2023-01-01')).toBeUndefined();
+      expect(flickrService.cleanPhotoName('2023-12-25 photo')).toBeUndefined();
+    });
+    it('should return undefined for empty or whitespace names', () => {
+      expect(flickrService.cleanPhotoName('')).toBeUndefined();
+      expect(flickrService.cleanPhotoName(' ')).toBeUndefined();
+      expect(flickrService.cleanPhotoName('\t')).toBeUndefined();
+    });
+    it('should return valid names', () => {
+      expect(flickrService.cleanPhotoName('Sunset at the beach')).toBe('Sunset at the beach');
+      expect(flickrService.cleanPhotoName('Family Portrait')).toBe('Family Portrait');
+    });
+  });
   describe('getAlbums', () => {
     it('should read albums from local metadata file', async () => {
       const mockAlbumsData = {
@@ -279,7 +306,7 @@ describe('FlickrService', () => {
 
       expect(photo.id).toBe('photo1');
       expect(photo.title).toBe('Photo 1');
-      expect(photo.description).toBe('Photo description');
+      expect(photo.description).toBe('Photo 1 - Photo description');
       expect(photo.tags).toEqual(['tag1', 'tag2']);
       expect(photo.latitude).toBe(40.7128);
       expect(photo.longitude).toBe(-74.006);

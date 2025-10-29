@@ -90,6 +90,26 @@ export class FlickrService {
       return trimmedDescription;
     }
   }
+
+  cleanPhotoName(name: string): string | undefined {
+    const trimmedName = name.trim();
+
+    if (trimmedName.startsWith('DSCN')) {
+      return undefined;
+    }
+    if (trimmedName.startsWith('IMG')) {
+      return undefined;
+    }
+    if (trimmedName === '.') {
+      return undefined;
+    }
+    // Filter out dates in YYYY-MM-DD format
+    if (/^\d{4}-\d{2}-\d{2}/.test(trimmedName)) {
+      return undefined;
+    }
+
+    return trimmedName || undefined;
+  }
   /**
    * Get detailed information about a specific photo from bulk export
    */
@@ -119,10 +139,23 @@ export class FlickrService {
       // Parse tags
       const tags = photoData.tags ? photoData.tags.map((tag: any) => tag.tag) : [];
 
+      const cleanedName = this.cleanPhotoName(photoData.name);
+      const cleanedDescription = this.cleanPhotoDescription(photoData.description);
+
+      // Create Google Photos description by concatenating name and description
+      let googleDescription: string | undefined;
+      if (cleanedName && cleanedDescription) {
+        googleDescription = `${cleanedName} - ${cleanedDescription}`;
+      } else if (cleanedName) {
+        googleDescription = cleanedName;
+      } else if (cleanedDescription) {
+        googleDescription = cleanedDescription;
+      }
+
       return {
         id: photoData.id,
         title: photoData.name,
-        description: this.cleanPhotoDescription(photoData.description),
+        description: googleDescription,
         url: photoFile ? join(this.dataDirectory, 'data', photoFile) : photoData.original,
         dateTaken: photoData.date_taken,
         dateUpload: photoData.date_imported,
