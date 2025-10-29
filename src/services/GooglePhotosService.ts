@@ -187,8 +187,9 @@ export class GooglePhotosService {
         };
       }
       if (dateCreated) {
+        const isoDate = new Date(dateCreated).toISOString();
         updateBody.mediaMetadata = {
-          creationTime: dateCreated,
+          creationTime: isoDate,
         };
       }
       await this.makeRequest('PATCH', `/mediaItems/${photoId}`, updateBody);

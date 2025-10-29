@@ -3,6 +3,7 @@
 
 const regexPositionFromVSCode = process.argv.length - 1;
 const fileNameRelative = process.argv[regexPositionFromVSCode];
-process.argv[regexPositionFromVSCode] = fileNameRelative.replace(/\\/g, "/");
+process.argv[regexPositionFromVSCode] = fileNameRelative.replace(/\\/g, '/');
+process.env.TZ = 'UTC';
 
-require("jest/bin/jest");
+require('jest/bin/jest');

@@ -264,7 +264,7 @@ describe('GooglePhotosService', () => {
           data: {
             id: 'photo-id',
             mediaMetadata: {
-              creationTime: '2021-01-01 00:00:00',
+              creationTime: '2021-01-01T00:00:00.000Z',
             },
           },
         })
