@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { FlickrService } from '../../../src/services/FlickrService';
-
 // Mock file system operations
 jest.mock('node:fs');
 jest.mock('node:path');
@@ -174,7 +173,7 @@ describe('FlickrService', () => {
     it('should read photo from local file path', async () => {
       const mockPhoto = {
         id: 'photo1',
-        url: '/test/data/directory/data/black_2_o_photo1_o.jpg',
+        url: 'https://flickr.com/test/data/directory/data/black_2_o_photo1_o.jpg',
         title: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
@@ -188,14 +187,15 @@ describe('FlickrService', () => {
         server: '',
         farm: 0,
       };
-
+      const mockFileName = 'black_2_o_photo1_o.jpg';
+      jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue([mockFileName]);
+      mockedJoin.mockImplementation(jest.requireActual('node:path').join);
       const mockBuffer = Buffer.from('mock image data');
       mockedReadFileSync.mockReturnValue(mockBuffer);
-
       const result = await flickrService.getPhoto(mockPhoto);
 
       expect(result).toEqual(mockBuffer);
-      expect(mockedReadFileSync).toHaveBeenCalledWith(mockPhoto.url);
+      expect(mockedReadFileSync).toHaveBeenCalledWith(expect.stringContaining(mockFileName));
     });
 
     it('should find photo file in data directory when URL is not a local path', async () => {

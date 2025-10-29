@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { FlickrAlbum, FlickrPhoto } from '../types';
 import { Logger } from '../utils/Logger';
@@ -167,8 +167,13 @@ export class FlickrService {
   private getDataFiles(): string[] {
     try {
       const dataDir = join(this.dataDirectory, 'data');
-      const fs = require('fs');
-      return fs.readdirSync(dataDir).filter((file: string) => file.endsWith('.jpg'));
+      const dataDirEntries = readdirSync(dataDir);
+      const filterFunction = function (entry: string) {
+        const result = entry.endsWith('.jpg');
+        return result;
+      };
+      const matchingEntries = dataDirEntries.filter(filterFunction);
+      return matchingEntries;
     } catch (error) {
       Logger.warning('Could not read data directory:', error);
       return [];
