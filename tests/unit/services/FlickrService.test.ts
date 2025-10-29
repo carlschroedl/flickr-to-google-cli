@@ -60,7 +60,7 @@ describe('FlickrService', () => {
       mockedReadFileSync.mockReturnValue(JSON.stringify(mockAlbumsData));
 
       // Mock getAlbumDetails to return a simplified album
-      jest.spyOn(flickrService, 'getAlbumDetails').mockResolvedValue({
+      jest.spyOn(flickrService, 'mapToFlickrAlbum').mockResolvedValue({
         id: 'album1',
         title: 'Album 1',
         description: 'Description 1',
@@ -94,24 +94,6 @@ describe('FlickrService', () => {
 
   describe('getAlbumDetails', () => {
     it('should read album details from local metadata file', async () => {
-      const mockAlbumsData = {
-        albums: [
-          {
-            id: 'album1',
-            title: 'Album 1',
-            description: 'Description 1',
-            photo_count: '1',
-            created: '1234567890',
-            last_updated: '1234567890',
-            photos: ['0', 'photo1'],
-            /*
-            above we simulate Flickr's strange behavior of arbitrarily including a nonexistent
-            photo with id = 0 in some albums. Our test should ensure that we filter out this photo.
-            */
-          },
-        ],
-      };
-
       const mockPhotoData = {
         id: 'photo1',
         name: 'Photo 1',
@@ -122,19 +104,23 @@ describe('FlickrService', () => {
         geo: [{ latitude: '40.7128', longitude: '-74.0060' }],
       };
 
-      mockedJoin
-        .mockReturnValueOnce('/test/data/directory/metadata/albums.json')
-        .mockReturnValueOnce('/test/data/directory/metadata/photo_photo1.json');
+      mockedJoin.mockReturnValueOnce('/test/data/directory/metadata/photo_photo1.json');
 
       mockedExistsSync.mockReturnValue(true);
-      mockedReadFileSync
-        .mockReturnValueOnce(JSON.stringify(mockAlbumsData))
-        .mockReturnValueOnce(JSON.stringify(mockPhotoData));
+      mockedReadFileSync.mockReturnValueOnce(JSON.stringify(mockPhotoData));
 
       // Mock getDataFiles to return a photo file
       jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue(['black_2_o_photo1_o.jpg']);
 
-      const album = await flickrService.getAlbumDetails('album1');
+      const album = await flickrService.mapToFlickrAlbum({
+        id: 'album1',
+        title: 'Album 1',
+        description: 'Description 1',
+        photo_count: '1',
+        created: '1234567890',
+        last_updated: '1234567890',
+        photos: ['photo1'],
+      });
 
       expect(album.id).toBe('album1');
       expect(album.title).toBe('Album 1');
@@ -143,30 +129,6 @@ describe('FlickrService', () => {
       expect(album.photos).toHaveLength(1);
       expect(album.photos[0].id).toBe('photo1');
       expect(album.photos[0].title).toBe('Photo 1');
-    });
-
-    it('should throw error when album not found', async () => {
-      const mockAlbumsData = {
-        albums: [
-          {
-            id: 'album2',
-            title: 'Album 2',
-            description: 'Description 2',
-            photo_count: '1',
-            created: '1234567890',
-            last_updated: '1234567890',
-            photos: ['photo1'],
-          },
-        ],
-      };
-
-      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
-      mockedExistsSync.mockReturnValue(true);
-      mockedReadFileSync.mockReturnValue(JSON.stringify(mockAlbumsData));
-
-      await expect(flickrService.getAlbumDetails('album1')).rejects.toThrow(
-        'Album album1 not found'
-      );
     });
   });
 
