@@ -1,6 +1,6 @@
 export interface FlickrPhoto {
   id: string;
-  title: string;
+  name?: string;
   description?: string;
   url: string;
   dateTaken: string;

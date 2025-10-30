@@ -82,7 +82,7 @@ export class FlickrService {
   }
   cleanPhotoDescription(description: string): string | undefined {
     const trimmedDescription = description.trim();
-    if ('.\\n' === trimmedDescription) {
+    if ('.' === trimmedDescription) {
       return undefined;
     } else if ('' === trimmedDescription) {
       return undefined;
@@ -142,20 +142,10 @@ export class FlickrService {
       const cleanedName = this.cleanPhotoName(photoData.name);
       const cleanedDescription = this.cleanPhotoDescription(photoData.description);
 
-      // Create Google Photos description by concatenating name and description
-      let googleDescription: string | undefined;
-      if (cleanedName && cleanedDescription) {
-        googleDescription = `${cleanedName} - ${cleanedDescription}`;
-      } else if (cleanedName) {
-        googleDescription = cleanedName;
-      } else if (cleanedDescription) {
-        googleDescription = cleanedDescription;
-      }
-
       return {
         id: photoData.id,
-        title: photoData.name,
-        description: googleDescription,
+        name: cleanedName,
+        description: cleanedDescription,
         url: photoFile ? join(this.dataDirectory, 'data', photoFile) : photoData.original,
         dateTaken: photoData.date_taken,
         dateUpload: photoData.date_imported,

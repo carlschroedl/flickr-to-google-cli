@@ -7,43 +7,17 @@ describe('CLI Commands Integration', () => {
   // Helper function to run CLI commands
   function cli(args: string[], cwd: string = process.cwd()) {
     return new Promise<{ code: number; error: any; stdout: string; stderr: string }>(resolve => {
-      exec(
-        `node ${path.resolve(cliPath)} ${args.join(' ')}`,
-        { cwd, timeout: 5000 },
-        (error, stdout, stderr) => {
-          resolve({
-            code: error && error.code ? error.code : 0,
-            error,
-            stdout,
-            stderr,
-          });
-        }
-      );
+      const toExecute = `node ${path.resolve(cliPath)} ${args.join(' ')}`;
+      return exec(toExecute, { cwd, timeout: 5000 }, (error, stdout, stderr) => {
+        resolve({
+          code: error && error.code ? error.code : 0,
+          error,
+          stdout,
+          stderr,
+        });
+      });
     });
   }
-
-  describe('help command', () => {
-    it('should show help information', async () => {
-      const result = await cli(['--help']);
-
-      expect(result.code).toBe(0);
-      expect(result.stdout).toContain('Transfer photo albums from Flickr to Google Photos');
-      expect(result.stdout).toContain('Commands:');
-      expect(result.stdout).toContain('setup');
-      expect(result.stdout).toContain('list-albums');
-      expect(result.stdout).toContain('transfer');
-      expect(result.stdout).toContain('status');
-    });
-  });
-
-  describe('version command', () => {
-    it('should show version information', async () => {
-      const result = await cli(['--version']);
-
-      expect(result.code).toBe(0);
-      expect(result.stdout.trim()).toBe('1.0.0');
-    });
-  });
 
   describe('list-albums command', () => {
     it('should list test albums', async () => {

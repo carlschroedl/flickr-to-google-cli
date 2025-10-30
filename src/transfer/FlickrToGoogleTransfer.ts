@@ -173,7 +173,7 @@ export class FlickrToGoogleTransfer {
     for (const photo of photos) {
       try {
         if (dryRun) {
-          Logger.info(`[DRY RUN] Would transfer: ${photo.title}`);
+          Logger.info(`[DRY RUN] Would transfer: ${photo.id}`);
           photoIds.push(`dry_run_${photo.id}`);
           continue;
         } else {
@@ -184,25 +184,41 @@ export class FlickrToGoogleTransfer {
           const mimeType = mime.lookup(photo.url) || 'image/jpeg';
           const filename = `${photo.id}.${mime.extension(mimeType) || 'jpg'}`;
 
+          const googleDescription = this.createGoogleDescription(photo.name, photo.description);
+
           // Upload to Google Photos
           const googlePhotoId = await this.googlePhotosService.uploadPhoto(
             photoBuffer,
             filename,
-            photo.description
+            googleDescription
           );
 
           photoIds.push(googlePhotoId);
-          Logger.debug(`Transferred photo: ${photo.title}`);
+          Logger.debug(`Transferred photo: ${photo.id}`);
         }
       } catch (error) {
-        Logger.warning(`Failed to transfer photo "${photo.title}": ${error}`);
+        Logger.warning(`Failed to transfer photo "${photo.id}": ${error}`);
         // Continue with other photos
       }
     }
 
     return photoIds;
   }
-
+  createGoogleDescription(
+    flickrName: string | undefined,
+    flickrDescription: string | undefined
+  ): string {
+    // Create Google Photos description by concatenating name and description
+    let googleDescription: string = '';
+    if (flickrName && flickrDescription) {
+      googleDescription = `${flickrName} - ${flickrDescription}`;
+    } else if (flickrName) {
+      googleDescription = flickrName;
+    } else if (flickrDescription) {
+      googleDescription = flickrDescription;
+    }
+    return googleDescription;
+  }
   async checkTransferStatus(jobId?: string): Promise<void> {
     if (!jobId) {
       // List all jobs

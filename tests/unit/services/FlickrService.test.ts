@@ -23,19 +23,24 @@ describe('FlickrService', () => {
     });
   });
   describe('cleanPhotoDescription', () => {
-    it('should return null if description is ".\\n"', () => {
-      expect(flickrService.cleanPhotoDescription('.\\n')).toBeUndefined();
+    it('should return undefined if description is like"."', () => {
+      expect(flickrService.cleanPhotoDescription('.\n')).toBeUndefined();
+      expect(flickrService.cleanPhotoDescription('.')).toBeUndefined();
     });
-    it('should return null if description is empty', () => {
+    it('should return undefined if description is empty', () => {
       expect(flickrService.cleanPhotoDescription('')).toBeUndefined();
     });
-    it('should return null if description is whitespace only', () => {
+    it('should return undefined if description is whitespace only', () => {
       expect(flickrService.cleanPhotoDescription(' ')).toBeUndefined();
       expect(flickrService.cleanPhotoDescription('\t')).toBeUndefined();
       expect(flickrService.cleanPhotoDescription('\n')).toBeUndefined();
     });
-    it('should return the description if it is not ".\\n" or empty', () => {
+    it('should return the trimmed description if it is not "." or empty', () => {
       expect(flickrService.cleanPhotoDescription('Description')).toBe('Description');
+      expect(flickrService.cleanPhotoDescription(' Description')).toBe('Description');
+      expect(flickrService.cleanPhotoDescription('Description ')).toBe('Description');
+      expect(flickrService.cleanPhotoDescription(' Description ')).toBe('Description');
+      expect(flickrService.cleanPhotoDescription('Description\n')).toBe('Description');
     });
   });
 
@@ -168,7 +173,7 @@ describe('FlickrService', () => {
       expect(album.photoCount).toBe(1);
       expect(album.photos).toHaveLength(1);
       expect(album.photos[0].id).toBe('photo1');
-      expect(album.photos[0].title).toBe('Photo 1');
+      expect(album.photos[0].name).toBe('Photo 1');
     });
 
     it('should throw error when album not found', async () => {
@@ -201,7 +206,7 @@ describe('FlickrService', () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://flickr.com/test/data/directory/data/black_2_o_photo1_o.jpg',
-        title: 'Photo 1',
+        name: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
         dateUpload: '1234567890',
@@ -229,7 +234,7 @@ describe('FlickrService', () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://example.com/photo1.jpg',
-        title: 'Photo 1',
+        name: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
         dateUpload: '1234567890',
@@ -260,7 +265,7 @@ describe('FlickrService', () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://example.com/photo1.jpg',
-        title: 'Photo 1',
+        name: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
         dateUpload: '1234567890',
@@ -305,8 +310,8 @@ describe('FlickrService', () => {
       const photo = await flickrService.getPhotoInfo('photo1');
 
       expect(photo.id).toBe('photo1');
-      expect(photo.title).toBe('Photo 1');
-      expect(photo.description).toBe('Photo 1 - Photo description');
+      expect(photo.name).toBe('Photo 1');
+      expect(photo.description).toBe('Photo description');
       expect(photo.tags).toEqual(['tag1', 'tag2']);
       expect(photo.latitude).toBe(40.7128);
       expect(photo.longitude).toBe(-74.006);

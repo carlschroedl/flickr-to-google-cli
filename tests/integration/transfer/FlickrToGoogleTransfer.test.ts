@@ -33,7 +33,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
     photos: [
       {
         id: 'photo1',
-        title: 'Photo 1',
+        name: 'Photo 1',
         description: 'Description 1',
         url: 'https://example.com/photo1.jpg',
         dateTaken: '2023-01-01',
@@ -49,7 +49,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
       },
       {
         id: 'photo2',
-        title: 'Photo 2',
+        name: 'Photo 2',
         description: 'Description 2',
         url: 'https://example.com/photo2.jpg',
         dateTaken: '2023-01-02',
@@ -275,7 +275,32 @@ describe('FlickrToGoogleTransfer Integration', () => {
       ]);
     });
   });
-
+  describe('createGoogleDescription', () => {
+    it('should create a Google Photos description by concatenating populated name and descriptions', () => {
+      const flickrName = 'Photo 1';
+      const flickrDescription = 'Description 1';
+      const googleDescription = transfer.createGoogleDescription(flickrName, flickrDescription);
+      expect(googleDescription).toBe('Photo 1 - Description 1');
+    });
+    it('should only use name if description is not populated', () => {
+      const flickrName = 'Photo 1';
+      const flickrDescription = undefined;
+      const googleDescription = transfer.createGoogleDescription(flickrName, flickrDescription);
+      expect(googleDescription).toBe('Photo 1');
+    });
+    it('should only use description if name is not populated', () => {
+      const flickrName = undefined;
+      const flickrDescription = 'Description 1';
+      const googleDescription = transfer.createGoogleDescription(flickrName, flickrDescription);
+      expect(googleDescription).toBe('Description 1');
+    });
+    it('should return empty string if both name and description are not populated', () => {
+      const flickrName = undefined;
+      const flickrDescription = undefined;
+      const googleDescription = transfer.createGoogleDescription(flickrName, flickrDescription);
+      expect(googleDescription).toBe('');
+    });
+  });
   describe('checkTransferStatus', () => {
     beforeEach(async () => {
       mockConfigManager.getCredentials.mockResolvedValue({
