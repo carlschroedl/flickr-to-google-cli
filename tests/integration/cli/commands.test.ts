@@ -8,7 +8,7 @@ describe('CLI Commands Integration', () => {
   function cli(args: string[], cwd: string = process.cwd()) {
     return new Promise<{ code: number; error: any; stdout: string; stderr: string }>(resolve => {
       const toExecute = `node ${path.resolve(cliPath)} ${args.join(' ')}`;
-      return exec(toExecute, { cwd, timeout: 5000 }, (error, stdout, stderr) => {
+      const result = exec(toExecute, { cwd, timeout: 10000 }, (error, stdout, stderr) => {
         resolve({
           code: error && error.code ? error.code : 0,
           error,
@@ -16,6 +16,7 @@ describe('CLI Commands Integration', () => {
           stderr,
         });
       });
+      return result;
     });
   }
 

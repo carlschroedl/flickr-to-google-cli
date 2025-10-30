@@ -126,6 +126,11 @@ export class FlickrToGoogleTransfer {
       const photoIds: string[] = [];
 
       for (let i = 0; i < album.photos.length; i += batchSize) {
+        if (i > 0) {
+          //built in delay to avoid rate limiting
+          Logger.info(`Pausing for 30 seconds to avoid rate limiting`);
+          await new Promise(r => setTimeout(r, 30000));
+        }
         const batch = album.photos.slice(i, i + batchSize);
         const batchPhotoIds = await this.processPhotoBatch(batch, options.dryRun || false);
         photoIds.push(...batchPhotoIds);
@@ -134,7 +139,6 @@ export class FlickrToGoogleTransfer {
         job.processedPhotos = Math.min(i + batchSize, album.photos.length);
         job.status = 'in_progress';
         await this.saveJob(job);
-
         Logger.progress(`Processing photos`, job.processedPhotos, job.totalPhotos);
       }
 
