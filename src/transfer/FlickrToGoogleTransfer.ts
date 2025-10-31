@@ -1,5 +1,4 @@
 import fs from 'fs-extra';
-import * as mime from 'mime-types';
 import ora from 'ora';
 import path from 'path';
 import { ConfigManager } from '../config/ConfigManager';
@@ -186,16 +185,12 @@ export class FlickrToGoogleTransfer {
           // Download photo
           const photoBuffer = await this.flickrService.getPhoto(photo);
 
-          // Determine MIME type
-          const mimeType = mime.lookup(photo.url) || 'image/jpeg';
-          const filename = `${photo.id}.${mime.extension(mimeType) || 'jpg'}`;
-
           const googleDescription = this.createGoogleDescription(photo.name, photo.description);
 
           // Upload to Google Photos
           const googlePhotoId = await this.googlePhotosService.uploadPhoto(
             photoBuffer,
-            filename,
+            photo.filename,
             googleDescription
           );
 

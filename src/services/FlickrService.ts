@@ -126,7 +126,11 @@ export class FlickrService {
       // Extract dimensions from filename or use defaults
       const dataFiles = this.getDataFiles();
       const photoFile = dataFiles.find(file => file.includes(photoId));
-
+      if (!photoFile) {
+        throw new Error(
+          `Photo file not found for photo ${photoId} in data directory ${this.dataDirectory}`
+        );
+      }
       // Parse geo data if available
       let latitude: number | undefined;
       let longitude: number | undefined;
@@ -146,7 +150,8 @@ export class FlickrService {
         id: photoData.id,
         name: cleanedName,
         description: cleanedDescription,
-        url: photoFile ? join(this.dataDirectory, 'data', photoFile) : photoData.original,
+        url: photoData.original,
+        filename: photoFile,
         dateTaken: photoData.date_taken,
         dateUpload: photoData.date_imported,
         tags,

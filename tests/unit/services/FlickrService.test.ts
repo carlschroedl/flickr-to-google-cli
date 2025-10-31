@@ -206,6 +206,7 @@ describe('FlickrService', () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://flickr.com/test/data/directory/data/black_2_o_photo1_o.jpg',
+        filename: 'black_2_o_photo1_o.jpg',
         name: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
@@ -234,6 +235,7 @@ describe('FlickrService', () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://example.com/photo1.jpg',
+        filename: 'photo1.jpg',
         name: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',
@@ -265,6 +267,7 @@ describe('FlickrService', () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://example.com/photo1.jpg',
+        filename: 'photo1.jpg',
         name: 'Photo 1',
         description: 'Description',
         dateTaken: '2023-01-01',

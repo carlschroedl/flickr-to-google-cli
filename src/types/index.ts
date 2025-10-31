@@ -3,6 +3,7 @@ export interface FlickrPhoto {
   name?: string;
   description?: string;
   url: string;
+  filename: string;
   dateTaken: string;
   dateUpload: string;
   tags: string[];
