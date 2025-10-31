@@ -51,6 +51,7 @@ export interface TransferOptions {
   dryRun?: boolean;
   batchSize?: number;
   dataDirectory?: string;
+  sleepTimeBetweenBatches: number;
 }
 
 export interface TransferJob {

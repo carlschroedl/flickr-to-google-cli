@@ -172,6 +172,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         albumId: 'album1',
         dryRun: false,
         batchSize: 10,
+        sleepTimeBetweenBatches: 0,
       };
 
       await transfer.transferAlbums(options);
@@ -199,6 +200,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         albumId: 'album1',
         dryRun: true,
         batchSize: 10,
+        sleepTimeBetweenBatches: 0,
       };
 
       await transfer.transferAlbums(options);
@@ -234,6 +236,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         albumId: 'album1',
         dryRun: false,
         batchSize: 10,
+        sleepTimeBetweenBatches: 0,
       };
 
       await transfer.transferAlbums(options);
@@ -264,6 +267,7 @@ describe('FlickrToGoogleTransfer Integration', () => {
         albumId: 'album1',
         dryRun: false,
         batchSize: 10,
+        sleepTimeBetweenBatches: 0,
       };
 
       await transfer.transferAlbums(options);

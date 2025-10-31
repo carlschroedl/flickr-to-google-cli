@@ -61,6 +61,11 @@ program
   .option('-d, --dry-run', 'Preview what would be transferred without actually transferring')
   .option('--batch-size <size>', 'Number of photos to process in each batch', '10')
   .option('--data-dir <directory>', 'Flickr bulk export data directory', './flickr-export')
+  .option(
+    '--sleep-time-between-batches <time>',
+    'Time to sleep between batches in milliseconds',
+    '30000'
+  )
   .action(async options => {
     try {
       const transfer = new FlickrToGoogleTransfer();
@@ -69,6 +74,7 @@ program
         dryRun: options.dryRun,
         batchSize: parseInt(options.batchSize),
         dataDirectory: options.dataDir,
+        sleepTimeBetweenBatches: parseInt(options.sleepTimeBetweenBatches),
       });
     } catch (error) {
       Logger.error('Transfer failed:', error);
