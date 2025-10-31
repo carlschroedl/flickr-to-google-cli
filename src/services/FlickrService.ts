@@ -5,6 +5,7 @@ import { Logger } from '../utils/Logger';
 
 export class FlickrService {
   private dataDirectory: string;
+  private dataFilesCache: string[] | null = null;
 
   constructor(dataDirectory: string) {
     this.dataDirectory = dataDirectory;
@@ -190,21 +191,21 @@ export class FlickrService {
   }
 
   /**
-   * Get list of data files in the data directory
+   * Get list of data files in the data directory (memoized)
    */
   private getDataFiles(): string[] {
+    if (this.dataFilesCache !== null) {
+      return this.dataFilesCache;
+    }
+
     try {
       const dataDir = join(this.dataDirectory, 'data');
       const dataDirEntries = readdirSync(dataDir);
-      const filterFunction = function (entry: string) {
-        const result = entry.endsWith('.jpg');
-        return result;
-      };
-      const matchingEntries = dataDirEntries.filter(filterFunction);
-      return matchingEntries;
+      this.dataFilesCache = dataDirEntries;
+      return dataDirEntries;
     } catch (error) {
-      Logger.warning('Could not read data directory:', error);
-      return [];
+      Logger.error('Could not read data directory:', error);
+      throw error;
     }
   }
 }
