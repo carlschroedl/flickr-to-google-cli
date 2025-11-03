@@ -1,17 +1,16 @@
 # Flickr to Google Photos CLI
 
-A command-line tool for transferring photo albums from Flickr to Google Photos while preserving metadata, descriptions, and location information.
+## Unmaintained, Unsupported
+
+This is a proof-of-concept command-line tool for transferring photo albums from Flickr to Google Photos while preserving some metadata. It is not maintained or supported.
 
 ## Features
 
 - 🖼️ Transfer entire photo albums from Flickr to Google Photos
-- 📝 Preserve photo descriptions and metadata
-- 📍 Maintain location information (GPS coordinates)
-- 🏷️ Keep photo tags and titles
+- 📝 Preserve photo descriptions and some metadata
 - 📊 Progress tracking and job status monitoring
 - 🔄 Batch processing for large albums
 - 🧪 Dry-run mode for testing
-- ⚡ Resume interrupted transfers
 
 ## Prerequisites
 
@@ -29,6 +28,7 @@ Before using this tool, you'll need export your Flickr data and set up API acces
 4. Create OAuth 2.0 credentials
 5. Note down your Client ID and Client Secret
 6. Set up OAuth consent screen if needed
+7. If using a test user, add their email to the OAuth consent screen
 
 ## Installation
 
@@ -62,7 +62,7 @@ npm link
 Run the setup command to configure your API credentials:
 
 ```bash
-npm run dev setup
+flickr-to-google setup
 ```
 
 This will prompt you for:
@@ -72,6 +72,12 @@ This will prompt you for:
 
 Your credentials will be stored in `.flickr-to-google.json` in your project directory.
 
+Next authenticate with Google Photos by running the following command.
+
+```bash
+flickr-to-google authenticate
+```
+
 ## Usage
 
 ### List Flickr Albums
@@ -79,13 +85,13 @@ Your credentials will be stored in `.flickr-to-google.json` in your project dire
 View all your Flickr albums:
 
 ```bash
-npm run dev list-albums
+flickr-to-google list-albums
 ```
 
-Or for a specific user:
+By default, the tool looks for your Flickr export in the `flickr-export`. To specify a different location, use the `--data-dir` option.
 
 ```bash
-npm run dev list-albums --user <username>
+flickr-to-google list-albums --data-dir myGreatFolder
 ```
 
 ### Transfer Albums
@@ -93,59 +99,20 @@ npm run dev list-albums --user <username>
 Transfer all albums:
 
 ```bash
-npm run dev transfer
+flickr-to-google transfer
 ```
 
 Transfer a specific album:
 
 ```bash
-npm run dev transfer --album <album-id>
+flickr-to-google transfer --album <album-id>
 ```
 
 Transfer with custom options:
 
 ```bash
-npm run dev transfer --album <album-id> --batch-size 5 --dry-run
+flickr-to-google transfer --album <album-id> --batch-size 5 --dry-run
 ```
-
-### Check Transfer Status
-
-View all transfer jobs:
-
-```bash
-npm run dev status
-```
-
-Check a specific job:
-
-```bash
-npm run dev status --job-id <job-id>
-```
-
-## Command Options
-
-### `transfer` command options:
-
-- `--album <albumId>`: Transfer a specific album by ID
-- `--user <username>`: Flickr username (if different from configured)
-- `--dry-run`: Preview what would be transferred without actually transferring
-- `--batch-size <size>`: Number of photos to process in each batch (default: 10)
-
-### `list-albums` command options:
-
-- `--user <username>`: Flickr username to list albums for
-
-### `status` command options:
-
-- `--job-id <jobId>`: Check status of a specific transfer job
-
-## How It Works
-
-1. **Authentication**: The tool uses your API credentials to authenticate Google Photos
-2. **Album Discovery**: Reads your Flickr albums and their metadata
-3. **Upload to Google Photos**: Uploads photos to Google Photos with preserved metadata
-4. **Album Creation**: Creates corresponding albums in Google Photos
-5. **Progress Tracking**: Monitors transfer progress and saves job status
 
 ## What Is Transferred?
 
@@ -158,17 +125,16 @@ npm run dev status --job-id <job-id>
 | Date Photo Taken  | ✅                          | Only if present on EXIF metadata on original photo file                                                                                                         |
 | Location          | ❌                          | Google Photos only supports adding this manually through the web interface. It cannot be added with an automated tool because Google's API does not support it. |
 | Date Uploaded     | ❌                          | This would require reading and writing EXIF metadata, which is out of scope for this project                                                                    |
+| Album Cover Photo | ❌                          | Not currently implemented                                                                                                                                       |
 
 ## No Exact Duplicate Photos
 
-Flickr allows the same photo to be uploaded multiple times. It treats them as different photos. This enables the same photo to occur in an album multiple times in Flickr.
+Flickr allows the same photo to be uploaded multiple times. It treats them as different photos. This enables the same image to occur in an album multiple times in Flickr.
 
 If you upload the exact same photo to Google Photos multiple times, it only creates one photo, even if the file name is different. Google Photos only allows a photo to occur once per album. Accordingly, if you want the same photo to appear multiple times in the same album in Google Photos, you must implement a workaround -- make the repeated image non-identical by making a trivial change to the file. For example, you could slightly crop the image or resave the image with slightly different quality.
 
 ## Error Handling
 
-- **Retry Logic**: Automatic retry for failed photo uploads
-- **Progress Tracking**: Jobs are saved and can be resumed
 - **Error Logging**: Detailed error messages for troubleshooting
 - **Batch Processing**: Failed photos don't stop the entire transfer
 
@@ -182,21 +148,15 @@ If you upload the exact same photo to Google Photos multiple times, it only crea
    - Check that the Google Photos Library API is enabled
 
 2. **Rate Limiting**
-   - The tool includes built-in rate limiting
-   - Reduce batch size if you encounter rate limit errors
-   - Use `--batch-size` option to control processing speed
-
-3. **Large Albums**
-   - Use smaller batch sizes for very large albums
-   - Monitor progress with the `status` command
-   - Consider using `--dry-run` first to estimate transfer time
+   - The tool includes built-in delays to avoid exceeding Google Photos API rate limiting
+   - If you encounter rate limit errors, specify different values for `--sleep-time-between-batches` or `--batch-size`
 
 ### Debug Mode
 
 Enable debug logging:
 
 ```bash
-DEBUG=1 npm run dev transfer
+DEBUG=1 flickr-to-google transfer
 ```
 
 ## Development
@@ -215,56 +175,17 @@ npm run dev <command>
 
 ### Testing
 
-```bash
-# Run all tests
-npm test
-
-# Run unit tests only
-npm run test:unit
-
-# Run integration tests only
-npm run test:integration
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-### Linting and Formatting
+Common testing commands folow. See `package.json` for full list.
 
 ```bash
-# Run ESLint
-npm run lint
-
-# Auto-fix linting issues
-npm run lint:fix
-
-# Format code with Prettier
-npm run format
-
-# Check formatting
-npm run format:check
-
 # Run all checks (lint + format + build + test)
 npm run check
 ```
 
-### Cleaning
-
 ```bash
-npm run clean
+# Run all tests
+npm test
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run `npm run check` to ensure code quality (linting, formatting, and build)
-5. Add tests if applicable
-6. Submit a pull request
 
 ### Code Quality
 
@@ -297,32 +218,15 @@ tests/
 └── setup.ts               # Test configuration
 ```
 
-Before submitting a pull request, make sure to run:
-
-```bash
-npm run check
-```
-
-This will run linting, format checking, build verification, and all tests.
-
 ## License
 
 MIT License - see LICENSE file for details
-
-## Support
-
-For issues and questions:
-
-1. Check the troubleshooting section above
-2. Review the error logs with debug mode enabled
-3. Open an issue on GitHub with detailed error information
 
 ## Security Notes
 
 - API credentials are stored locally in `.flickr-to-google.json`
 - Never commit this file to version control
 - The file is included in `.gitignore` for your protection
-- Consider using environment variables for production deployments
 
 ## Dependency Management
 
