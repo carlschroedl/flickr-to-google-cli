@@ -8,7 +8,7 @@ This is a proof-of-concept command-line tool for transferring photo albums from 
 
 - 🖼️ Transfer entire photo albums from Flickr to Google Photos
 - 📝 Preserve photo descriptions and some metadata
-- 📊 Progress tracking and job status monitoring
+- 📊 Progress tracking
 - 🔄 Batch processing for large albums
 - 🧪 Dry-run mode for testing
 

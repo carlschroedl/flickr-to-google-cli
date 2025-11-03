@@ -4,7 +4,7 @@ import path from 'path';
 import { ConfigManager } from '../config/ConfigManager';
 import { FlickrService } from '../services/FlickrService';
 import { GooglePhotosService } from '../services/GooglePhotosService';
-import { FlickrAlbum, FlickrPhoto, GoogleAlbum, TransferJob, TransferOptions } from '../types';
+import { FlickrAlbum, FlickrPhoto, GoogleAlbum, TransferOptions } from '../types';
 import { Logger } from '../utils/Logger';
 
 export class FlickrToGoogleTransfer {
@@ -88,19 +88,6 @@ export class FlickrToGoogleTransfer {
   }
 
   private async transferAlbum(album: FlickrAlbum, options: TransferOptions): Promise<void> {
-    const jobId = `job_${Date.now()}_${album.id}`;
-    const job: TransferJob = {
-      id: jobId,
-      status: 'pending',
-      albumId: album.id,
-      albumTitle: album.title,
-      totalPhotos: album.photos.length,
-      processedPhotos: 0,
-      startTime: new Date(),
-    };
-
-    await this.saveJob(job);
-
     Logger.info(`Transferring album: ${album.title} (${album.photos.length} photos)`);
 
     try {
@@ -135,12 +122,6 @@ export class FlickrToGoogleTransfer {
         const batch = album.photos.slice(i, i + batchSize);
         const batchPhotoIds = await this.processPhotoBatch(batch, options.dryRun || false);
         photoIds.push(...batchPhotoIds);
-
-        // Update job progress
-        job.processedPhotos = Math.min(i + batchSize, album.photos.length);
-        job.status = 'in_progress';
-        await this.saveJob(job);
-        Logger.progress(`Processing photos`, job.processedPhotos, job.totalPhotos);
       }
 
       // Add photos to album
@@ -155,18 +136,8 @@ export class FlickrToGoogleTransfer {
         Logger.success(`Added ${photoIds.length} photos to album`);
       }
 
-      // Mark job as completed
-      job.status = 'completed';
-      job.endTime = new Date();
-      await this.saveJob(job);
-
       Logger.success(`Album "${album.title}" transferred successfully!`);
     } catch (error) {
-      job.status = 'failed';
-      job.error = error instanceof Error ? error.message : 'Unknown error';
-      job.endTime = new Date();
-      await this.saveJob(job);
-
       Logger.error(`Failed to transfer album "${album.title}":`, error);
       throw error;
     }
@@ -219,98 +190,5 @@ export class FlickrToGoogleTransfer {
       googleDescription = flickrDescription;
     }
     return googleDescription;
-  }
-  async checkTransferStatus(jobId?: string): Promise<void> {
-    if (!jobId) {
-      // List all jobs
-      const jobs = await this.getAllJobs();
-
-      if (jobs.length === 0) {
-        Logger.info('No transfer jobs found');
-        return;
-      }
-
-      Logger.info('\nTransfer Jobs:');
-      Logger.info('==============');
-
-      jobs.forEach(job => {
-        const statusIcon = this.getStatusIcon(job.status);
-
-        Logger.info(`${statusIcon} ${job.albumTitle} (${job.processedPhotos}/${job.totalPhotos})`);
-        Logger.info(`   Status: ${job.status}`);
-        Logger.info(`   Started: ${job.startTime.toLocaleString()}`);
-        if (job.endTime) {
-          Logger.info(`   Ended: ${job.endTime.toLocaleString()}`);
-        }
-        if (job.error) {
-          Logger.info(`   Error: ${job.error}`);
-        }
-        Logger.info('');
-      });
-    } else {
-      // Check specific job
-      const job = await this.getJob(jobId);
-      if (!job) {
-        Logger.error(`Job ${jobId} not found`);
-        return;
-      }
-
-      Logger.info(`\nJob Status: ${job.id}`);
-      Logger.info('==============');
-      Logger.info(`Album: ${job.albumTitle}`);
-      Logger.info(`Status: ${job.status}`);
-      Logger.info(`Progress: ${job.processedPhotos}/${job.totalPhotos}`);
-      Logger.info(`Started: ${job.startTime.toLocaleString()}`);
-      if (job.endTime) {
-        Logger.info(`Ended: ${job.endTime.toLocaleString()}`);
-      }
-      if (job.error) {
-        Logger.info(`Error: ${job.error}`);
-      }
-    }
-  }
-
-  private async saveJob(job: TransferJob): Promise<void> {
-    const jobPath = path.join(this.jobStoragePath, `${job.id}.json`);
-    await fs.writeJson(jobPath, job, { spaces: 2 });
-  }
-
-  private async getJob(jobId: string): Promise<TransferJob | null> {
-    try {
-      const jobPath = path.join(this.jobStoragePath, `${jobId}.json`);
-      return await fs.readJson(jobPath);
-    } catch {
-      return null;
-    }
-  }
-
-  private async getAllJobs(): Promise<TransferJob[]> {
-    try {
-      const files = await fs.readdir(this.jobStoragePath);
-      const jobs: TransferJob[] = [];
-
-      for (const file of files) {
-        if (file.endsWith('.json')) {
-          const jobPath = path.join(this.jobStoragePath, file);
-          const job = await fs.readJson(jobPath);
-          jobs.push(job);
-        }
-      }
-
-      return jobs.sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
-    } catch {
-      return [];
-    }
-  }
-
-  private getStatusIcon(status: string): string {
-    const statusIconMap: Record<string, string> = {
-      completed: '✓',
-      failed: 'X',
-      in_progress: '⏳',
-      pending: '⏸',
-    };
-
-    return statusIconMap[status] || '❓';
   }
 }

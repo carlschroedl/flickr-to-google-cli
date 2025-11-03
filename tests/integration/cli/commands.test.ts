@@ -53,17 +53,6 @@ describe('CLI Commands Integration', () => {
     });
   });
 
-  describe('status command', () => {
-    it('should show help for status command', async () => {
-      const result = await cli(['status', '--help']);
-
-      expect(result.code).toBe(0);
-      expect(result.stdout).toContain('Check the status of a previous transfer');
-      expect(result.stdout).toContain('Options:');
-      expect(result.stdout).toContain('--job-id');
-    });
-  });
-
   describe('error handling', () => {
     it('should handle unknown commands gracefully', async () => {
       const result = await cli(['unknown-command']);

@@ -82,18 +82,4 @@ program
     }
   });
 
-program
-  .command('status')
-  .description('Check the status of a previous transfer')
-  .option('-j, --job-id <jobId>', 'Job ID to check status for')
-  .action(async options => {
-    try {
-      const transfer = new FlickrToGoogleTransfer();
-      await transfer.checkTransferStatus(options.jobId);
-    } catch (error) {
-      Logger.error('Failed to check status:', error);
-      process.exit(1);
-    }
-  });
-
 program.parse();
