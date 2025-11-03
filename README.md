@@ -155,8 +155,9 @@ npm run dev status --job-id <job-id>
 | Album Description | ❌                          | Not Supported by Google Photos                                                                                                                                  |
 | Photo Name        | ✅                          | Combined with Flickr photo description and stored in Google Photo description                                                                                   |
 | Photo Description | ✅                          | Combined with Flickr photo name and stored in Google Photo description                                                                                          |
-| Date Photo Taken  | ✅                          | Uses EXIF data on photo file                                                                                                                                    |
+| Date Photo Taken  | ✅                          | Only if present on EXIF metadata on original photo file                                                                                                         |
 | Location          | ❌                          | Google Photos only supports adding this manually through the web interface. It cannot be added with an automated tool because Google's API does not support it. |
+| Date Uploaded     | ❌                          | This would require reading and writing EXIF metadata, which is out of scope for this project                                                                    |
 
 ## No Exact Duplicate Photos
 
