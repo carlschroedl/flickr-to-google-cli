@@ -127,7 +127,7 @@ export class FlickrToGoogleTransfer {
       for (let i = 0; i < album.photos.length; i += batchSize) {
         if (i > 0) {
           //built in delay to avoid rate limiting
-          Logger.info(
+          Logger.debug(
             `Pausing for ${options.sleepTimeBetweenBatches} miliseconds to avoid rate limiting`
           );
           await new Promise(r => setTimeout(r, options.sleepTimeBetweenBatches));
