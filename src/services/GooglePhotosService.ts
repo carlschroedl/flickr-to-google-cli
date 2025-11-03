@@ -144,8 +144,9 @@ export class GooglePhotosService {
       const createResponse = await this.makeRequest('POST', '/mediaItems:batchCreate', {
         newMediaItems: [newMediaItem],
       });
-
-      return createResponse.newMediaItemResults[0].mediaItem.id;
+      const mediaItemId = createResponse.newMediaItemResults[0].mediaItem.id;
+      Logger.debug(JSON.stringify({ mediaItemId, filename, uploadToken }));
+      return mediaItemId;
     } catch (error) {
       Logger.error('Failed to upload photo:', error);
       throw error;
