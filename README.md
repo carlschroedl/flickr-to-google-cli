@@ -147,20 +147,22 @@ npm run dev status --job-id <job-id>
 4. **Album Creation**: Creates corresponding albums in Google Photos
 5. **Progress Tracking**: Monitors transfer progress and saves job status
 
-## Metadata Preservation
+## What Is Transferred?
 
-The tool preserves the following metadata during transfer:
+| Flickr Data       | Will Transfer Automatically | Note                                                                                                                                                            |
+| ----------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Album Name        | ✅                          |                                                                                                                                                                 |
+| Album Description | ❌                          | Not Supported by Google Photos                                                                                                                                  |
+| Photo Name        | ✅                          | Combined with Flickr photo description and stored in Google Photo description                                                                                   |
+| Photo Description | ✅                          | Combined with Flickr photo name and stored in Google Photo description                                                                                          |
+| Date Photo Taken  | ✅                          | Uses EXIF data on photo file                                                                                                                                    |
+| Location          | ❌                          | Google Photos only supports adding this manually through the web interface. It cannot be added with an automated tool because Google's API does not support it. |
 
-- Photo titles and descriptions
-- GPS location information (latitude/longitude)
-- Photo dimensions and technical details
-- Album titles
-- Creation and upload dates
+## No Exact Duplicate Photos
 
-## Limitations
+Flickr allows the same photo to be uploaded multiple times. It treats them as different photos. This enables the same photo to occur in an album multiple times in Flickr.
 
-Flickr supports album descriptions, but Google does not. Therefore this tool cannot transfer your
-Flickr album descriptions.
+If you upload the exact same photo to Google Photos multiple times, it only creates one photo, even if the file name is different. Google Photos only allows a photo to occur once per album. Accordingly, if you want the same photo to appear multiple times in the same album in Google Photos, you must implement a workaround -- make the repeated image non-identical by making a trivial change to the file. For example, you could slightly crop the image or resave the image with slightly different quality.
 
 ## Error Handling
 

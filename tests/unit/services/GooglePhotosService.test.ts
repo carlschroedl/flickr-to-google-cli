@@ -203,7 +203,13 @@ describe('GooglePhotosService', () => {
       const mockAuth = (googlePhotosService as any).auth;
       mockAuth.request.mockResolvedValue({ data: {} });
 
-      await googlePhotosService.addPhotosToAlbum('album-id', ['photo-1', 'photo-2']);
+      await googlePhotosService.addPhotosToAlbum('album-id', [
+        'photo-1',
+        'photo-2',
+        'photo-1',
+        'photo-3',
+        'photo-2',
+      ]);
 
       expect(mockAuth.request).toHaveBeenCalledWith({
         method: 'POST',
@@ -213,7 +219,7 @@ describe('GooglePhotosService', () => {
           'Content-Type': 'application/json',
         },
         data: {
-          mediaItemIds: ['photo-1', 'photo-2'],
+          mediaItemIds: ['photo-1', 'photo-2', 'photo-3'],
         },
       });
     });

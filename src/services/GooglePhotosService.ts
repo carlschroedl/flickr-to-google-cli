@@ -127,7 +127,6 @@ export class GooglePhotosService {
         },
         data: photoBuffer,
       });
-
       const uploadToken = uploadResponse.data;
 
       const newMediaItem: any = {
@@ -154,9 +153,10 @@ export class GooglePhotosService {
   }
 
   async addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
+    const uniquePhotoIds = [...new Set(photoIds)];
     try {
       await this.makeRequest('POST', `/albums/${albumId}:batchAddMediaItems`, {
-        mediaItemIds: photoIds,
+        mediaItemIds: uniquePhotoIds,
       });
     } catch (error) {
       Logger.error('Failed to add photos to album:', error);
