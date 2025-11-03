@@ -151,9 +151,16 @@ export class GooglePhotosService {
       throw error;
     }
   }
-
   async addPhotosToAlbum(albumId: string, photoIds: string[]): Promise<void> {
     const uniquePhotoIds = [...new Set(photoIds)];
+
+    const batchSize = 50; // Google Photos API has a limit of 50 photos per batch
+    for (let i = 0; i < uniquePhotoIds.length; i += batchSize) {
+      const batch = uniquePhotoIds.slice(i, i + batchSize);
+      await this.addBatchOfPhotosToAlbum(albumId, batch);
+    }
+  }
+  async addBatchOfPhotosToAlbum(albumId: string, uniquePhotoIds: string[]): Promise<void> {
     try {
       await this.makeRequest('POST', `/albums/${albumId}:batchAddMediaItems`, {
         mediaItemIds: uniquePhotoIds,

@@ -223,6 +223,30 @@ describe('GooglePhotosService', () => {
         },
       });
     });
+    it('should split the photos into batches of 50', async () => {
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({ data: {} });
+      const photos = Array.from({ length: 100 }, (_, i) => `photo-${i}`);
+      await googlePhotosService.addPhotosToAlbum('album-id', photos);
+
+      expect(mockAuth.request).toHaveBeenCalledTimes(2);
+      expect(mockAuth.request).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          data: {
+            mediaItemIds: photos.slice(0, 50),
+          },
+        })
+      );
+      expect(mockAuth.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          data: {
+            mediaItemIds: photos.slice(50, 100),
+          },
+        })
+      );
+    });
   });
 
   describe('getAccessToken', () => {
