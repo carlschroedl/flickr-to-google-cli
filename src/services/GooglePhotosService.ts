@@ -12,9 +12,7 @@ export class GooglePhotosService {
     retryDelay: 10000,
     httpMethodsToRetry: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE'],
     onRetryAttempt(err) {
-      Logger.warning(
-        `Attempt failed. Will wait, then attempt again. Error message: ${err.message}`
-      );
+      Logger.warning(`Warning: Request failed. Will wait, then retry. Message: "${err.message}".`);
     },
   };
 
