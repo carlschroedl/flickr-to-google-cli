@@ -122,6 +122,9 @@ export class FlickrToGoogleTransfer {
         const batch = album.photos.slice(i, i + batchSize);
         const batchPhotoIds = await this.processPhotoBatch(batch, options.dryRun || false);
         photoIds.push(...batchPhotoIds);
+        // Update job progress
+        const processedPhotos = Math.min(i + batchSize, album.photos.length);
+        Logger.progress(`Processing photos`, processedPhotos, album.photos.length);
       }
 
       // Add photos to album
