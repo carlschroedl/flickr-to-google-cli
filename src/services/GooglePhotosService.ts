@@ -1,4 +1,4 @@
-import { GaxiosOptions } from 'gaxios';
+import { GaxiosOptions, RetryConfig } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { ApiCredentials, GoogleAlbum } from '../types';
@@ -7,10 +7,15 @@ import { Logger } from '../utils/Logger';
 export class GooglePhotosService {
   private auth: OAuth2Client;
   private baseUrl = 'https://photoslibrary.googleapis.com/v1';
-  private readonly retryConfig = {
+  private readonly retryConfig: RetryConfig = {
     retry: 3,
     retryDelay: 10000,
     httpMethodsToRetry: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE'],
+    onRetryAttempt(err) {
+      Logger.warning(
+        `Attempt failed. Will wait, then attempt again. Error message: ${err.message}`
+      );
+    },
   };
 
   constructor(credentials: ApiCredentials['google']) {
