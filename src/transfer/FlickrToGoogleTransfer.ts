@@ -112,7 +112,7 @@ export class FlickrToGoogleTransfer {
       const photoIds: string[] = [];
 
       for (let i = 0; i < album.photos.length; i += batchSize) {
-        if (i > 0) {
+        if (options.dryRun !== true) {
           //built in delay to avoid rate limiting
           Logger.debug(
             `Pausing for ${options.sleepTimeBetweenBatches} miliseconds to avoid rate limiting`
