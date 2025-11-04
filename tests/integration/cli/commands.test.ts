@@ -22,8 +22,8 @@ describe('CLI Commands Integration', () => {
 
   describe('list-albums command', () => {
     it('should list test albums', async () => {
-      const dataDir = path.resolve(__dirname, '../example');
-      const result = await cli(['list-albums', '--data-dir', dataDir]);
+      const flickrExportPath = path.resolve(__dirname, '../example');
+      const result = await cli(['list-albums', '--flickr-export-path', flickrExportPath]);
 
       expect(result.code).toBe(0);
       expect(result.stdout).toContain('Flickr Albums:');
@@ -35,7 +35,7 @@ describe('CLI Commands Integration', () => {
 
       expect(result.code).toBe(0);
       expect(result.stdout).toContain('List all Flickr albums');
-      expect(result.stdout).toContain('--data-dir');
+      expect(result.stdout).toContain('--flickr-export-path');
     });
   });
 
@@ -47,7 +47,7 @@ describe('CLI Commands Integration', () => {
       expect(result.stdout).toContain('Transfer albums from Flickr to Google Photos');
       expect(result.stdout).toContain('Options:');
       expect(result.stdout).toContain('--album');
-      expect(result.stdout).toContain('--data-dir');
+      expect(result.stdout).toContain('--flickr-export-path');
       expect(result.stdout).toContain('--dry-run');
       expect(result.stdout).toContain('--batch-size');
     });

@@ -4,11 +4,11 @@ import { FlickrAlbum, FlickrPhoto } from '../types';
 import { Logger } from '../utils/Logger';
 
 export class FlickrService {
-  private dataDirectory: string;
+  private flickrExportPath: string;
   private dataFilesCache: string[] | null = null;
 
-  constructor(dataDirectory: string) {
-    this.dataDirectory = dataDirectory;
+  constructor(flickrExportPath: string) {
+    this.flickrExportPath = flickrExportPath;
   }
 
   /**
@@ -16,7 +16,7 @@ export class FlickrService {
    */
   async getAlbums(): Promise<FlickrAlbum[]> {
     try {
-      const albumsPath = join(this.dataDirectory, 'metadata', 'albums.json');
+      const albumsPath = join(this.flickrExportPath, 'metadata', 'albums.json');
 
       if (!existsSync(albumsPath)) {
         throw new Error(`Albums metadata file not found: ${albumsPath}`);
@@ -42,7 +42,7 @@ export class FlickrService {
    */
   async getAlbumDetails(albumId: string): Promise<FlickrAlbum> {
     try {
-      const albumsPath = join(this.dataDirectory, 'metadata', 'albums.json');
+      const albumsPath = join(this.flickrExportPath, 'metadata', 'albums.json');
 
       if (!existsSync(albumsPath)) {
         throw new Error(`Albums metadata file not found: ${albumsPath}`);
@@ -116,7 +116,7 @@ export class FlickrService {
    */
   async getPhotoInfo(photoId: string): Promise<FlickrPhoto> {
     try {
-      const photoPath = join(this.dataDirectory, 'metadata', `photo_${photoId}.json`);
+      const photoPath = join(this.flickrExportPath, 'metadata', `photo_${photoId}.json`);
 
       if (!existsSync(photoPath)) {
         throw new Error(`Photo metadata file not found: ${photoPath}`);
@@ -129,7 +129,7 @@ export class FlickrService {
       const photoFile = dataFiles.find(file => file.includes(photoId));
       if (!photoFile) {
         throw new Error(
-          `Photo file not found for photo ${photoId} in data directory ${this.dataDirectory}`
+          `Photo file not found for photo ${photoId} in flickr export path ${this.flickrExportPath}`
         );
       }
       // Parse geo data if available
@@ -179,7 +179,7 @@ export class FlickrService {
       const photoFile = dataFiles.find(file => file.includes(photo.id));
 
       if (photoFile) {
-        const filePath = join(this.dataDirectory, 'data', photoFile);
+        const filePath = join(this.flickrExportPath, 'data', photoFile);
         return readFileSync(filePath);
       }
 
@@ -199,7 +199,7 @@ export class FlickrService {
     }
 
     try {
-      const dataDir = join(this.dataDirectory, 'data');
+      const dataDir = join(this.flickrExportPath, 'data');
       const dataDirEntries = readdirSync(dataDir);
       this.dataFilesCache = dataDirEntries;
       return dataDirEntries;

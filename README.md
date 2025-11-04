@@ -88,10 +88,10 @@ View all your Flickr albums:
 flickr-to-google list-albums
 ```
 
-By default, the tool looks for your Flickr export in the `flickr-export`. To specify a different location, use the `--data-dir` option.
+By default, the tool looks for your Flickr export in the `flickr-export`. To specify a different location, use the `--flickr-export-path` option.
 
 ```bash
-flickr-to-google list-albums --data-dir myGreatFolder
+flickr-to-google list-albums --flickr-export-path myGreatFolder
 ```
 
 ### Transfer Albums

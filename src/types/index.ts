@@ -51,7 +51,7 @@ export interface TransferOptions {
   albumId?: string;
   dryRun?: boolean;
   batchSize?: number;
-  dataDirectory?: string;
+  flickrExportPath?: string;
   sleepTimeBetweenBatches: number;
 }
 

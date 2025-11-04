@@ -1,3 +1,4 @@
+import { GaxiosOptions } from 'gaxios';
 import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { ApiCredentials, GoogleAlbum } from '../types';
@@ -6,6 +7,11 @@ import { Logger } from '../utils/Logger';
 export class GooglePhotosService {
   private auth: OAuth2Client;
   private baseUrl = 'https://photoslibrary.googleapis.com/v1';
+  private readonly retryConfig = {
+    retry: 3,
+    retryDelay: 10000,
+    httpMethodsToRetry: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE'],
+  };
 
   constructor(credentials: ApiCredentials['google']) {
     this.auth = new google.auth.OAuth2(
@@ -50,13 +56,14 @@ export class GooglePhotosService {
     const token = this.auth.credentials.access_token;
     const url = `${this.baseUrl}${endpoint}`;
 
-    const options: any = {
+    const options: GaxiosOptions = {
       method,
       url,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
+      retryConfig: this.retryConfig,
     };
 
     if (data) {
@@ -126,6 +133,7 @@ export class GooglePhotosService {
           'X-Goog-Upload-File-Name': filename,
         },
         data: photoBuffer,
+        retryConfig: this.retryConfig,
       });
       const uploadToken = uploadResponse.data;
 

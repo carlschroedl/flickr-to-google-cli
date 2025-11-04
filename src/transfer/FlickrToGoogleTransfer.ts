@@ -18,20 +18,20 @@ export class FlickrToGoogleTransfer {
     this.jobStoragePath = path.join(process.cwd(), '.transfer-jobs');
   }
 
-  async initialize(dataDirectory?: string): Promise<void> {
+  async initialize(flickrExportPath?: string): Promise<void> {
     const credentials = await this.configManager.getCredentials();
-    // Use provided dataDirectory, environment variable, or default
-    const flickrDataDirectory =
-      dataDirectory || process.env.FLICKR_DATA_DIRECTORY || './flickr-export';
-    this.flickrService = new FlickrService(flickrDataDirectory);
+    // Use provided flickrExportPath, environment variable, or default
+    const flickrExportPathResolved =
+      flickrExportPath || process.env.FLICKR_EXPORT_PATH || './flickr-export';
+    this.flickrService = new FlickrService(flickrExportPathResolved);
     this.googlePhotosService = new GooglePhotosService(credentials.google);
 
     // Ensure job storage directory exists
     await fs.ensureDir(this.jobStoragePath);
   }
 
-  async listFlickrAlbums(dataDirectory?: string): Promise<void> {
-    await this.initialize(dataDirectory);
+  async listFlickrAlbums(flickrExportPath?: string): Promise<void> {
+    await this.initialize(flickrExportPath);
 
     const spinner = ora('Fetching Flickr albums...').start();
 
@@ -58,7 +58,7 @@ export class FlickrToGoogleTransfer {
   }
 
   async transferAlbums(options: TransferOptions): Promise<void> {
-    await this.initialize(options.dataDirectory);
+    await this.initialize(options.flickrExportPath);
 
     const spinner = ora('Starting transfer...').start();
 

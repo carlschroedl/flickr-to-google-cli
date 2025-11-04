@@ -63,19 +63,21 @@ describe('GooglePhotosService', () => {
         coverPhotoBaseUrl: undefined,
         isWriteable: true,
       });
-      expect(mockAuth.request).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://photoslibrary.googleapis.com/v1/albums',
-        headers: {
-          Authorization: 'Bearer test-access-token',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          album: {
-            title: 'Test Album',
+      expect(mockAuth.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          url: 'https://photoslibrary.googleapis.com/v1/albums',
+          headers: {
+            Authorization: 'Bearer test-access-token',
+            'Content-Type': 'application/json',
           },
-        },
-      });
+          data: {
+            album: {
+              title: 'Test Album',
+            },
+          },
+        })
+      );
     });
 
     it('should throw error when creation fails', async () => {
@@ -126,14 +128,16 @@ describe('GooglePhotosService', () => {
           isWriteable: false,
         },
       ]);
-      expect(mockAuth.request).toHaveBeenCalledWith({
-        method: 'GET',
-        url: 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50',
-        headers: {
-          Authorization: 'Bearer test-access-token',
-          'Content-Type': 'application/json',
-        },
-      });
+      expect(mockAuth.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'GET',
+          url: 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50',
+          headers: {
+            Authorization: 'Bearer test-access-token',
+            'Content-Type': 'application/json',
+          },
+        })
+      );
     });
 
     it('should return empty array when no albums', async () => {
@@ -211,17 +215,19 @@ describe('GooglePhotosService', () => {
         'photo-2',
       ]);
 
-      expect(mockAuth.request).toHaveBeenCalledWith({
-        method: 'POST',
-        url: 'https://photoslibrary.googleapis.com/v1/albums/album-id:batchAddMediaItems',
-        headers: {
-          Authorization: 'Bearer test-access-token',
-          'Content-Type': 'application/json',
-        },
-        data: {
-          mediaItemIds: ['photo-1', 'photo-2', 'photo-3'],
-        },
-      });
+      expect(mockAuth.request).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'POST',
+          url: 'https://photoslibrary.googleapis.com/v1/albums/album-id:batchAddMediaItems',
+          headers: {
+            Authorization: 'Bearer test-access-token',
+            'Content-Type': 'application/json',
+          },
+          data: {
+            mediaItemIds: ['photo-1', 'photo-2', 'photo-3'],
+          },
+        })
+      );
     });
     it('should split the photos into batches of 50', async () => {
       const mockAuth = (googlePhotosService as any).auth;

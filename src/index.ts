@@ -43,11 +43,15 @@ program
 program
   .command('list-albums')
   .description('List all Flickr albums')
-  .option('--data-dir <directory>', 'Flickr bulk export data directory', './flickr-export')
+  .option(
+    '-f --flickr-export-path <directory>',
+    'Flickr bulk export data directory',
+    './flickr-export'
+  )
   .action(async options => {
     try {
       const transfer = new FlickrToGoogleTransfer();
-      await transfer.listFlickrAlbums(options.dataDir);
+      await transfer.listFlickrAlbums(options.flickrExportPath);
     } catch (error) {
       Logger.error('Failed to list albums:', error);
       process.exit(1);
@@ -59,10 +63,14 @@ program
   .description('Transfer albums from Flickr to Google Photos')
   .option('-a, --album <albumId>', 'Specific album ID to transfer')
   .option('-d, --dry-run', 'Preview what would be transferred without actually transferring')
-  .option('--batch-size <size>', 'Number of photos to process in each batch', '10')
-  .option('--data-dir <directory>', 'Flickr bulk export data directory', './flickr-export')
+  .option('-b --batch-size <size>', 'Number of photos to process in each batch', '10')
   .option(
-    '--sleep-time-between-batches <time>',
+    '-f --flickr-export-path <directory>',
+    'Flickr bulk export data directory',
+    './flickr-export'
+  )
+  .option(
+    '-s --sleep-time-between-batches <time>',
     'Time to sleep between batches in milliseconds',
     '10000'
   )
@@ -73,7 +81,7 @@ program
         albumId: options.album,
         dryRun: options.dryRun,
         batchSize: parseInt(options.batchSize),
-        dataDirectory: options.dataDir,
+        flickrExportPath: options.flickrExportPath,
         sleepTimeBetweenBatches: parseInt(options.sleepTimeBetweenBatches),
       });
     } catch (error) {

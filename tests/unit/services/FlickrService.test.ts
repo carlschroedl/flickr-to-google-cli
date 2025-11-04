@@ -10,15 +10,15 @@ const mockedJoin = join as jest.MockedFunction<typeof join>;
 
 describe('FlickrService', () => {
   let flickrService: FlickrService;
-  const mockDataDirectory = '/test/data/directory';
+  const mockFlickrExportPath = '/test/path/flickr';
 
   beforeEach(() => {
     jest.clearAllMocks();
-    flickrService = new FlickrService(mockDataDirectory);
+    flickrService = new FlickrService(mockFlickrExportPath);
   });
 
   describe('constructor', () => {
-    it('should initialize with data directory', () => {
+    it('should initialize with flickr export path', () => {
       expect(flickrService).toBeInstanceOf(FlickrService);
     });
   });
@@ -86,7 +86,7 @@ describe('FlickrService', () => {
         ],
       };
 
-      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
+      mockedJoin.mockReturnValue('/test/path/flickr/metadata/albums.json');
       mockedExistsSync.mockReturnValue(true);
       mockedReadFileSync.mockReturnValue(JSON.stringify(mockAlbumsData));
 
@@ -106,19 +106,19 @@ describe('FlickrService', () => {
       expect(albums).toHaveLength(1);
       expect(albums[0].id).toBe('album1');
       expect(albums[0].title).toBe('Album 1');
-      expect(mockedJoin).toHaveBeenCalledWith(mockDataDirectory, 'metadata', 'albums.json');
+      expect(mockedJoin).toHaveBeenCalledWith(mockFlickrExportPath, 'metadata', 'albums.json');
       expect(mockedReadFileSync).toHaveBeenCalledWith(
-        '/test/data/directory/metadata/albums.json',
+        '/test/path/flickr/metadata/albums.json',
         'utf-8'
       );
     });
 
     it('should throw error when albums metadata file not found', async () => {
-      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
+      mockedJoin.mockReturnValue('/test/path/flickr/metadata/albums.json');
       mockedExistsSync.mockReturnValue(false);
 
       await expect(flickrService.getAlbums()).rejects.toThrow(
-        'Albums metadata file not found: /test/data/directory/metadata/albums.json'
+        'Albums metadata file not found: /test/path/flickr/metadata/albums.json'
       );
     });
   });
@@ -154,8 +154,8 @@ describe('FlickrService', () => {
       };
 
       mockedJoin
-        .mockReturnValueOnce('/test/data/directory/metadata/albums.json')
-        .mockReturnValueOnce('/test/data/directory/metadata/photo_photo1.json');
+        .mockReturnValueOnce('/test/path/flickr/metadata/albums.json')
+        .mockReturnValueOnce('/test/path/flickr/metadata/photo_photo1.json');
 
       mockedExistsSync.mockReturnValue(true);
       mockedReadFileSync
@@ -191,7 +191,7 @@ describe('FlickrService', () => {
         ],
       };
 
-      mockedJoin.mockReturnValue('/test/data/directory/metadata/albums.json');
+      mockedJoin.mockReturnValue('/test/path/flickr/metadata/albums.json');
       mockedExistsSync.mockReturnValue(true);
       mockedReadFileSync.mockReturnValue(JSON.stringify(mockAlbumsData));
 
@@ -205,7 +205,7 @@ describe('FlickrService', () => {
     it('should read photo from local file path', async () => {
       const mockPhoto = {
         id: 'photo1',
-        url: 'https://flickr.com/test/data/directory/data/black_2_o_photo1_o.jpg',
+        url: 'https://flickr.com/test/path/flickr/data/black_2_o_photo1_o.jpg',
         filename: 'black_2_o_photo1_o.jpg',
         name: 'Photo 1',
         description: 'Description',
@@ -231,7 +231,7 @@ describe('FlickrService', () => {
       expect(mockedReadFileSync).toHaveBeenCalledWith(expect.stringContaining(mockFileName));
     });
 
-    it('should find photo file in data directory when URL is not a local path', async () => {
+    it('should find photo file in flickr export path when URL is not a local path', async () => {
       const mockPhoto = {
         id: 'photo1',
         url: 'https://example.com/photo1.jpg',
@@ -254,13 +254,17 @@ describe('FlickrService', () => {
 
       // Mock getDataFiles to return a matching file
       jest.spyOn(flickrService as any, 'getDataFiles').mockReturnValue(['black_2_o_photo1_o.jpg']);
-      mockedJoin.mockReturnValue('/test/data/directory/data/black_2_o_photo1_o.jpg');
+      mockedJoin.mockReturnValue('/test/path/flickr/data/black_2_o_photo1_o.jpg');
       mockedReadFileSync.mockReturnValue(mockBuffer);
 
       const result = await flickrService.getPhoto(mockPhoto);
 
       expect(result).toEqual(mockBuffer);
-      expect(mockedJoin).toHaveBeenCalledWith(mockDataDirectory, 'data', 'black_2_o_photo1_o.jpg');
+      expect(mockedJoin).toHaveBeenCalledWith(
+        mockFlickrExportPath,
+        'data',
+        'black_2_o_photo1_o.jpg'
+      );
     });
 
     it('should throw error when photo file not found', async () => {
@@ -303,7 +307,7 @@ describe('FlickrService', () => {
         geo: [{ latitude: '40.7128', longitude: '-74.0060' }],
       };
 
-      mockedJoin.mockReturnValue('/test/data/directory/metadata/photo_photo1.json');
+      mockedJoin.mockReturnValue('/test/path/flickr/metadata/photo_photo1.json');
       mockedExistsSync.mockReturnValue(true);
       mockedReadFileSync.mockReturnValue(JSON.stringify(mockPhotoData));
 
@@ -318,15 +322,19 @@ describe('FlickrService', () => {
       expect(photo.tags).toEqual(['tag1', 'tag2']);
       expect(photo.latitude).toBe(40.7128);
       expect(photo.longitude).toBe(-74.006);
-      expect(mockedJoin).toHaveBeenCalledWith(mockDataDirectory, 'metadata', 'photo_photo1.json');
+      expect(mockedJoin).toHaveBeenCalledWith(
+        mockFlickrExportPath,
+        'metadata',
+        'photo_photo1.json'
+      );
     });
 
     it('should throw error when photo metadata file not found', async () => {
-      mockedJoin.mockReturnValue('/test/data/directory/metadata/photo_photo1.json');
+      mockedJoin.mockReturnValue('/test/path/flickr/metadata/photo_photo1.json');
       mockedExistsSync.mockReturnValue(false);
 
       await expect(flickrService.getPhotoInfo('photo1')).rejects.toThrow(
-        'Photo metadata file not found: /test/data/directory/metadata/photo_photo1.json'
+        'Photo metadata file not found: /test/path/flickr/metadata/photo_photo1.json'
       );
     });
   });
