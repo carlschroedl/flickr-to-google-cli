@@ -64,7 +64,7 @@ program
   .option(
     '--sleep-time-between-batches <time>',
     'Time to sleep between batches in milliseconds',
-    '7500'
+    '10000'
   )
   .action(async options => {
     try {
