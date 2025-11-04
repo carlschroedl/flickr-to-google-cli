@@ -161,7 +161,7 @@ If you upload the exact same photo to Google Photos multiple times, it only crea
 
 2. **Rate Limiting**
    - The tool includes built-in delays to avoid exceeding Google Photos API rate limiting
-   - If you encounter rate limit errors, specify different values for `--sleep-time-between-batches` or `--batch-size`
+   - If you encounter rate limit errors, specify different values for `--sleep-time` or `--batch-size`
 
 ### Debug Mode
 

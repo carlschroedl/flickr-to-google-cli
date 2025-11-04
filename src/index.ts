@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import { ConfigManager } from './config/ConfigManager';
 import { FlickrToGoogleTransfer } from './transfer/FlickrToGoogleTransfer';
+import { TransferOptions } from './types';
 import { Logger } from './utils/Logger';
 
 const program = new Command();
@@ -69,21 +70,18 @@ program
     'Flickr bulk export data directory',
     './flickr-export'
   )
-  .option(
-    '-s --sleep-time-between-batches <time>',
-    'Time to sleep between batches in milliseconds',
-    '10000'
-  )
+  .option('-s --sleep-time <time>', 'Time to sleep between batches in milliseconds', '10000')
   .action(async options => {
     try {
       const transfer = new FlickrToGoogleTransfer();
-      await transfer.transferAlbums({
+      const parsedOptions: TransferOptions = {
         albumId: options.album,
         dryRun: options.dryRun,
         batchSize: parseInt(options.batchSize),
         flickrExportPath: options.flickrExportPath,
-        sleepTimeBetweenBatches: parseInt(options.sleepTimeBetweenBatches),
-      });
+        sleepTimeBetweenBatches: parseInt(options.sleepTime),
+      };
+      await transfer.transferAlbums(parsedOptions);
     } catch (error) {
       Logger.error('Transfer failed:', error);
       process.exit(1);
