@@ -18,7 +18,19 @@ Before using this tool, you'll need export your Flickr data and set up API acces
 
 ### Flickr Setup
 
-1. [Download all your Flickr content as one or more zip files](https://www.flickrhelp.com/hc/en-us/articles/4404079675156-Downloading-content-from-Flickr#h_01K2YYSY0GQ4T8PXC8B47HQ97T)
+1. [Download all your Flickr content as zip files](https://www.flickrhelp.com/hc/en-us/articles/4404079675156-Downloading-content-from-Flickr#h_01K2YYSY0GQ4T8PXC8B47HQ97T)
+1. Extract your zip files into the directory structure that this program expects. See [./tests/integration/example/](./tests/integration/example/). More explicitly...
+
+1. Create a `flickr` directory.
+1. Within the `flickr` directory, create with two subdirectories:
+   - `metadata`
+   - `data`
+
+1. Extract all `data-download-#.zip` files into the `data` directory
+1. Extract all `###_###_part#.zip` files into the `metadata` directory
+1. Verify the structure. You should see...
+   - `.json` files inside the `metadata` directory
+   - `.jpg` and other image files inside the `data` directory
 
 ### Google Photos API Setup
 
@@ -88,7 +100,7 @@ View all your Flickr albums:
 flickr-to-google list-albums
 ```
 
-By default, the tool looks for your Flickr export in the `flickr-export`. To specify a different location, use the `--flickr-export-path` option.
+By default, the tool looks for your Flickr export in the `flickr-export`. To specify a different location, use the `--flickr-export-path` option. The specified path should contain a `data` and a `metadata` subdirectory as described in [Flickr Setup](#flickr-setup).
 
 ```bash
 flickr-to-google list-albums --flickr-export-path myGreatFolder
@@ -111,7 +123,7 @@ flickr-to-google transfer --album <album-id>
 Transfer with custom options:
 
 ```bash
-flickr-to-google transfer --album <album-id> --batch-size 5 --dry-run
+flickr-to-google transfer --album <album-id> --batch-size 5 --dry-run --flickr-export-path ~/Pictures/flickr
 ```
 
 ## What Is Transferred?
