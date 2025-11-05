@@ -132,9 +132,22 @@ describe('FlickrToGoogleTransfer Integration', () => {
       await transfer.listFlickrAlbums();
 
       expect(mockFlickrService.getAlbums).toHaveBeenCalled();
+
       expect(consoleSpy).toHaveBeenCalledWith(
         LOG_PREFIXES.INFO,
         expect.stringContaining(mockAlbum.title)
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        LOG_PREFIXES.INFO,
+        expect.stringContaining(mockAlbum.id)
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        LOG_PREFIXES.INFO,
+        expect.stringContaining(mockAlbum.photoCount.toString())
+      );
+      expect(consoleSpy).toHaveBeenCalledWith(
+        LOG_PREFIXES.INFO,
+        expect.stringContaining(mockAlbum.description)
       );
     });
 
@@ -143,9 +156,9 @@ describe('FlickrToGoogleTransfer Integration', () => {
         google: { clientId: 'test', clientSecret: 'test' },
       });
 
-      mockFlickrService.getAlbums.mockRejectedValue(new Error('API Error'));
+      mockFlickrService.getAlbums.mockRejectedValue(new Error('Example Error'));
 
-      await expect(transfer.listFlickrAlbums()).rejects.toThrow('API Error');
+      await expect(transfer.listFlickrAlbums()).rejects.toThrow('Example Error');
     });
   });
 

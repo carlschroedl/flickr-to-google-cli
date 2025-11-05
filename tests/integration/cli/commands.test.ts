@@ -26,7 +26,6 @@ describe('CLI Commands Integration', () => {
       const result = await cli(['list-albums', '--flickr-export-path', flickrExportPath]);
 
       expect(result.code).toBe(0);
-      expect(result.stdout).toContain('Flickr Albums:');
       expect(result.stdout).toContain('Test Album');
       expect(result.stdout).toContain('Test Album 2');
     });

@@ -33,26 +33,22 @@ export class FlickrToGoogleTransfer {
   async listFlickrAlbums(flickrExportPath?: string): Promise<void> {
     await this.initialize(flickrExportPath);
 
-    const spinner = ora('Fetching Flickr albums...').start();
-
     try {
       const albums = await this.flickrService.getAlbums();
-      spinner.succeed(`Found ${albums.length} albums`);
 
-      Logger.info('\nFlickr Albums:');
-      Logger.info('==============');
-
-      albums.forEach((album, index) => {
-        Logger.info(`${index + 1}. ${album.title}`);
-        Logger.info(`   ID: ${album.id}`);
-        Logger.info(`   Photos: ${album.photoCount}`);
-        Logger.info(
-          `   Description: ${album.description.substring(0, 100)}${album.description.length > 100 ? '...' : ''}`
-        );
-        Logger.info('');
+      Logger.info('ID\tTitle\tPhotos\tDescription');
+      albums.forEach(album => {
+        const row = [
+          album.id,
+          album.title,
+          album.photoCount,
+          album.description.substring(0, 100),
+          album.description.length > 100 ? '...' : '',
+        ];
+        Logger.info(row.join('\t'));
       });
     } catch (error) {
-      spinner.fail('Failed to fetch albums');
+      Logger.error('Failed to fetch albums:', error);
       throw error;
     }
   }
