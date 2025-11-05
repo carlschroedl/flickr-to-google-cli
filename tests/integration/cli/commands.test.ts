@@ -52,6 +52,17 @@ describe('CLI Commands Integration', () => {
     });
   });
 
+  describe('list-google-albums command', () => {
+    it('should show help for list-google-albums command', async () => {
+      const result = await cli(['list-google-albums', '--help']);
+
+      expect(result.code).toBe(0);
+      expect(result.stdout).toContain(
+        'List all Google Photos albums and their photo counts as TSV'
+      );
+    });
+  });
+
   describe('error handling', () => {
     it('should handle unknown commands gracefully', async () => {
       const result = await cli(['unknown-command']);

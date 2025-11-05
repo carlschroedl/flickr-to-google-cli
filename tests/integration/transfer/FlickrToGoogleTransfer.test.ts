@@ -4,7 +4,6 @@ import { FlickrService } from '../../../src/services/FlickrService';
 import { GooglePhotosService } from '../../../src/services/GooglePhotosService';
 import { FlickrToGoogleTransfer } from '../../../src/transfer/FlickrToGoogleTransfer';
 import { FlickrAlbum, TransferOptions } from '../../../src/types';
-import { LOG_PREFIXES } from '../../../src/utils/Logger';
 
 // Mock dependencies
 jest.mock('../../../src/services/FlickrService');
@@ -133,21 +132,9 @@ describe('FlickrToGoogleTransfer Integration', () => {
 
       expect(mockFlickrService.getAlbums).toHaveBeenCalled();
 
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining(mockAlbum.title));
       expect(consoleSpy).toHaveBeenCalledWith(
-        LOG_PREFIXES.INFO,
-        expect.stringContaining(mockAlbum.title)
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        LOG_PREFIXES.INFO,
-        expect.stringContaining(mockAlbum.id)
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        LOG_PREFIXES.INFO,
         expect.stringContaining(mockAlbum.photoCount.toString())
-      );
-      expect(consoleSpy).toHaveBeenCalledWith(
-        LOG_PREFIXES.INFO,
-        expect.stringContaining(mockAlbum.description)
       );
     });
 

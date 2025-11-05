@@ -2,6 +2,7 @@
 
 import { Command } from 'commander';
 import { ConfigManager } from './config/ConfigManager';
+import { GooglePhotosService } from './services/GooglePhotosService';
 import { FlickrToGoogleTransfer } from './transfer/FlickrToGoogleTransfer';
 import { TransferOptions } from './types';
 import { Logger } from './utils/Logger';
@@ -55,6 +56,34 @@ program
       await transfer.listFlickrAlbums(options.flickrExportPath);
     } catch (error) {
       Logger.error('Failed to list albums:', error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('list-google-albums')
+  .description('List all Google Photos albums and their photo counts as TSV')
+  .action(async () => {
+    try {
+      const configManager = new ConfigManager();
+      const credentials = await configManager.getCredentials();
+      const googlePhotosService = new GooglePhotosService(credentials.google);
+      const albums = await googlePhotosService.getAlbums();
+
+      // Output TSV header
+      Logger.log('Title\tPhoto Count');
+
+      // Output TSV data rows
+      for (const album of albums) {
+        // Replace tabs and newlines in album title to preserve TSV format
+        const sanitizedTitle = album.title
+          .replace(/\t/g, ' ')
+          .replace(/\n/g, ' ')
+          .replace(/\r/g, '');
+        Logger.log(`${sanitizedTitle}\t${album.mediaItemsCount}`);
+      }
+    } catch (error) {
+      Logger.error('Failed to list Google Photos albums:', error);
       process.exit(1);
     }
   });

@@ -150,6 +150,124 @@ describe('GooglePhotosService', () => {
 
       expect(result).toEqual([]);
     });
+
+    it('should handle pagination and fetch all albums across multiple pages', async () => {
+      const mockAlbumsPage1 = [
+        {
+          id: 'album-1',
+          title: 'Album 1',
+          mediaItemsCount: 5,
+          isWriteable: true,
+        },
+        {
+          id: 'album-2',
+          title: 'Album 2',
+          mediaItemsCount: 3,
+          isWriteable: false,
+        },
+      ];
+
+      const mockAlbumsPage2 = [
+        {
+          id: 'album-3',
+          title: 'Album 3',
+          mediaItemsCount: 10,
+          isWriteable: true,
+        },
+      ];
+
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request
+        .mockResolvedValueOnce({
+          data: { albums: mockAlbumsPage1, nextPageToken: 'page-token-123' },
+        })
+        .mockResolvedValueOnce({
+          data: { albums: mockAlbumsPage2 },
+        });
+
+      const result = await googlePhotosService.getAlbums();
+
+      expect(result).toEqual([
+        {
+          id: 'album-1',
+          title: 'Album 1',
+          mediaItemsCount: 5,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: true,
+        },
+        {
+          id: 'album-2',
+          title: 'Album 2',
+          mediaItemsCount: 3,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: false,
+        },
+        {
+          id: 'album-3',
+          title: 'Album 3',
+          mediaItemsCount: 10,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: true,
+        },
+      ]);
+
+      expect(mockAuth.request).toHaveBeenCalledTimes(2);
+      expect(mockAuth.request).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          method: 'GET',
+          url: 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50',
+        })
+      );
+      expect(mockAuth.request).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          method: 'GET',
+          url: 'https://photoslibrary.googleapis.com/v1/albums?pageSize=50&pageToken=page-token-123',
+        })
+      );
+    });
+
+    it('should handle albums with special characters in titles', async () => {
+      const mockAlbums = [
+        {
+          id: 'album-1',
+          title: 'Album with\ttab',
+          mediaItemsCount: 5,
+          isWriteable: true,
+        },
+        {
+          id: 'album-2',
+          title: 'Album with\nnewline',
+          mediaItemsCount: 3,
+          isWriteable: false,
+        },
+      ];
+
+      const mockAuth = (googlePhotosService as any).auth;
+      mockAuth.request.mockResolvedValue({
+        data: { albums: mockAlbums },
+      });
+
+      const result = await googlePhotosService.getAlbums();
+
+      expect(result).toEqual([
+        {
+          id: 'album-1',
+          title: 'Album with\ttab',
+          mediaItemsCount: 5,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: true,
+        },
+        {
+          id: 'album-2',
+          title: 'Album with\nnewline',
+          mediaItemsCount: 3,
+          coverPhotoBaseUrl: undefined,
+          isWriteable: false,
+        },
+      ]);
+    });
   });
 
   describe('uploadPhoto', () => {

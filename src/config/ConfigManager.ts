@@ -93,9 +93,8 @@ export class ConfigManager {
       const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: [
-          'https://www.googleapis.com/auth/photoslibrary',
+          'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
           'https://www.googleapis.com/auth/photoslibrary.appendonly',
-          'https://www.googleapis.com/auth/photoslibrary.readonly',
           'https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata',
         ],
         prompt: 'consent', // Force consent to get refresh token

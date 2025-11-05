@@ -105,16 +105,31 @@ export class GooglePhotosService {
 
   async getAlbums(): Promise<GoogleAlbum[]> {
     try {
-      const response = await this.makeRequest('GET', '/albums?pageSize=50');
+      const allAlbums: GoogleAlbum[] = [];
+      let pageToken: string | undefined = undefined;
 
-      return (response.albums || []).map((album: any) => ({
-        id: album.id!,
-        title: album.title!,
-        description: album.description,
-        mediaItemsCount: album.mediaItemsCount || 0,
-        coverPhotoBaseUrl: album.coverPhotoBaseUrl,
-        isWriteable: album.isWriteable || false,
-      }));
+      do {
+        let endpoint = '/albums?pageSize=50';
+        if (pageToken) {
+          endpoint += `&pageToken=${encodeURIComponent(pageToken)}`;
+        }
+
+        const response = await this.makeRequest('GET', endpoint);
+
+        const albums = (response.albums || []).map((album: any) => ({
+          id: album.id!,
+          title: album.title!,
+          description: album.description,
+          mediaItemsCount: album.mediaItemsCount || 0,
+          coverPhotoBaseUrl: album.coverPhotoBaseUrl,
+          isWriteable: album.isWriteable || false,
+        }));
+
+        allAlbums.push(...albums);
+        pageToken = response.nextPageToken;
+      } while (pageToken);
+
+      return allAlbums;
     } catch (error) {
       Logger.error('Failed to get albums:', error);
       throw error;

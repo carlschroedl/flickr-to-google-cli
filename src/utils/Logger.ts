@@ -11,6 +11,10 @@ export const LOG_PREFIXES = {
 } as const;
 
 export class Logger {
+  static log(message: string, ...args: any[]): void {
+    console.log(message, ...args);
+  }
+
   static info(message: string, ...args: any[]): void {
     console.log(LOG_PREFIXES.INFO, message, ...args);
   }

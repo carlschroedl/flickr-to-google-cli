@@ -35,17 +35,10 @@ export class FlickrToGoogleTransfer {
 
     try {
       const albums = await this.flickrService.getAlbums();
-
-      Logger.info('ID\tTitle\tPhotos\tDescription');
+      Logger.log('Title\tPhoto Count');
       albums.forEach(album => {
-        const row = [
-          album.id,
-          album.title,
-          album.photoCount,
-          album.description.substring(0, 100),
-          album.description.length > 100 ? '...' : '',
-        ];
-        Logger.info(row.join('\t'));
+        const row = [album.title, album.photoCount];
+        Logger.log(row.join('\t'));
       });
     } catch (error) {
       Logger.error('Failed to fetch albums:', error);
