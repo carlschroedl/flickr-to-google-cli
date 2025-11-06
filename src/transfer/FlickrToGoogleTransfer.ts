@@ -6,6 +6,7 @@ import { FlickrService } from '../services/FlickrService';
 import { GooglePhotosService } from '../services/GooglePhotosService';
 import { FlickrAlbum, FlickrPhoto, GoogleAlbum, TransferOptions } from '../types';
 import { Logger } from '../utils/Logger';
+import { sortAlphabeticallyByProperty } from '../utils/Sort';
 
 export class FlickrToGoogleTransfer {
   private flickrService!: FlickrService;
@@ -35,10 +36,10 @@ export class FlickrToGoogleTransfer {
 
     try {
       const albums = await this.flickrService.getAlbums();
-      Logger.log('Title\tPhoto Count');
-      albums.forEach(album => {
-        const row = [album.title, album.photoCount];
-        Logger.log(row.join('\t'));
+      const sortedAlbums = sortAlphabeticallyByProperty<FlickrAlbum>(albums, 'title');
+      Logger.row(['Title', 'Photo Count']);
+      sortedAlbums.forEach(album => {
+        Logger.row([album.title, album.photoCount.toString()]);
       });
     } catch (error) {
       Logger.error('Failed to fetch albums:', error);

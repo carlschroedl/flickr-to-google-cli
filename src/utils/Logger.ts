@@ -11,10 +11,6 @@ export const LOG_PREFIXES = {
 } as const;
 
 export class Logger {
-  static log(message: string, ...args: any[]): void {
-    console.log(message, ...args);
-  }
-
   static info(message: string, ...args: any[]): void {
     console.log(LOG_PREFIXES.INFO, message, ...args);
   }
@@ -47,5 +43,14 @@ export class Logger {
     if (current === total) {
       process.stdout.write('\n');
     }
+  }
+
+  static row(values: string[]): void {
+    // Sanitize each value by replacing tabs, newlines, and carriage returns with spaces
+    const sanitizedValues = values.map(value =>
+      value.replace(/\t/g, ' ').replace(/\r\n/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ')
+    );
+    // Output values separated by tab character
+    console.log(sanitizedValues.join('\t'));
   }
 }

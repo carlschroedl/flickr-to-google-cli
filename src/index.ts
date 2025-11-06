@@ -4,8 +4,9 @@ import { Command } from 'commander';
 import { ConfigManager } from './config/ConfigManager';
 import { GooglePhotosService } from './services/GooglePhotosService';
 import { FlickrToGoogleTransfer } from './transfer/FlickrToGoogleTransfer';
-import { TransferOptions } from './types';
+import { GoogleAlbum, TransferOptions } from './types';
 import { Logger } from './utils/Logger';
+import { sortAlphabeticallyByProperty } from './utils/Sort';
 
 const program = new Command();
 
@@ -71,16 +72,11 @@ program
       const albums = await googlePhotosService.getAlbums();
 
       // Output TSV header
-      Logger.log('Title\tPhoto Count');
-
+      Logger.row(['Title', 'Photo Count']);
+      const sortedAlbums = sortAlphabeticallyByProperty<GoogleAlbum>(albums, 'title');
       // Output TSV data rows
-      for (const album of albums) {
-        // Replace tabs and newlines in album title to preserve TSV format
-        const sanitizedTitle = album.title
-          .replace(/\t/g, ' ')
-          .replace(/\n/g, ' ')
-          .replace(/\r/g, '');
-        Logger.log(`${sanitizedTitle}\t${album.mediaItemsCount}`);
+      for (const album of sortedAlbums) {
+        Logger.row([album.title, album.mediaItemsCount.toString()]);
       }
     } catch (error) {
       Logger.error('Failed to list Google Photos albums:', error);
