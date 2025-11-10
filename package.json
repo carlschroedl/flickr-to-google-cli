@@ -45,7 +45,7 @@
     "googleapis": "^162.0.0",
     "handlebars": "^4.7.8",
     "mime-types": "^2.1.35",
-    "ora": "^5.4.1"
+    "ora": "^9.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
